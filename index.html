@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cliente da API de Empregos</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: auto; padding: 20px; background-color: #f4f4f4; }
+        h1, h2, h3 { text-align: center; }
+        .container { display: flex; gap: 20px; justify-content: center; }
+        .panel { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 400px; }
+        input, button { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        button.secondary { background-color: #6c757d; }
+        button.secondary:hover { background-color: #5a6268; }
+        button.danger { background-color: #dc3545; }
+        button.danger:hover { background-color: #c82333; }
+        #responseArea { background-color: #e9ecef; padding: 10px; border-radius: 5px; min-height: 50px; white-space: pre-wrap; word-wrap: break-word; margin-top: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Cliente API de Empregos</h1>
+    <div class="container">
+        <div class="panel" id="authPanel">
+            <h2>Autenticação</h2>
+            <form id="loginForm">
+                <h3>Login</h3>
+                <input type="text" id="loginUsername" placeholder="Username" required>
+                <input type="password" id="loginPassword" placeholder="Senha" required>
+                <button type="submit">Login</button>
+            </form>
+            <hr>
+            <form id="registerForm">
+                <h3>Cadastro</h3>
+                <input type="text" id="regName" placeholder="Nome Completo" required>
+                <input type="text" id="regUsername" placeholder="Username" required>
+                <input type="password" id="regPassword" placeholder="Senha" required>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </div>
+
+        <div class="panel hidden" id="viewUserPanel">
+            <h2>Painel do Usuário</h2>
+            <div id="userInfo"></div>
+            <hr>
+            <button id="editBtn">Editar Dados</button>
+            <button id="deleteBtn" class="danger">Deletar Conta</button>
+            <button id="logoutBtn" class="secondary">Logout</button>
+        </div>
+
+        <div class="panel hidden" id="editUserPanel">
+            <h2>Editar Perfil</h2>
+            <form id="updateForm">
+                <label>Nome Completo:</label>
+                <input type="text" id="updateName">
+                <label>Email:</label>
+                <input type="email" id="updateEmail">
+                <label>Nova Senha (deixe em branco se não quiser mudar):</label>
+                <input type="password" id="updatePassword">
+                <button type="submit">Salvar Alterações</button>
+                <button type="button" id="cancelUpdateBtn" class="secondary">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>Resposta do Servidor</h2>
+    <pre id="responseArea"></pre>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/api'; // Lembre-se de ajustar a porta aqui!
+        let jwtToken = null;
+        let currentUser = null;
+
+        // Mapeamento dos elementos da tela
+        const responseArea = document.getElementById('responseArea');
+        const authPanel = document.getElementById('authPanel');
+        const viewUserPanel = document.getElementById('viewUserPanel');
+        const editUserPanel = document.getElementById('editUserPanel');
+        const userInfoDiv = document.getElementById('userInfo');
+
+        // --- Funções de controle de tela ---
+        function showScreen(screen) {
+            authPanel.classList.add('hidden');
+            viewUserPanel.classList.add('hidden');
+            editUserPanel.classList.add('hidden');
+            document.getElementById(screen).classList.remove('hidden');
+        }
+
+        function showResponse(data) {
+            responseArea.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function updateUserInfo() {
+             userInfoDiv.innerHTML = `
+                <p><strong>ID:</strong> ${currentUser.user_id}</p>
+                <p><strong>Nome:</strong> ${currentUser.full_name}</p>
+                <p><strong>Username:</strong> ${currentUser.username}</p>
+                <p><strong>Email:</strong> ${currentUser.email_address || 'Não informado'}</p>
+            `;
+        }
+
+        // --- Funções da API ---
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+            if (jwtToken) {
+                headers['Authorization'] = `Bearer ${jwtToken}`;
+            }
+            const options = { method, headers, body: body ? JSON.stringify(body) : null };
+            
+            try {
+                const response = await fetch(API_URL + endpoint, options);
+                const data = await response.json();
+                showResponse(data);
+                return data;
+            } catch (error) {
+                const errorMsg = { error: 'Erro de rede ou JSON inválido', details: error.message };
+                showResponse(errorMsg);
+                return errorMsg;
+            }
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                name: document.getElementById('regName').value,
+                username: document.getElementById('regUsername').value,
+                password: document.getElementById('regPassword').value,
+            };
+            await apiCall('/users', 'POST', body);
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value,
+            };
+            const data = await apiCall('/login', 'POST', body);
+            if (data && data.status === 'success') {
+                jwtToken = data.data.token;
+                currentUser = data.data.user;
+                updateUserInfo();
+                showScreen('viewUserPanel');
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await apiCall('/logout', 'POST', {}, jwtToken);
+            jwtToken = null;
+            currentUser = null;
+            showScreen('authPanel');
+        });
+
+        document.getElementById('editBtn').addEventListener('click', () => {
+            // Preenche o formulário de edição com os dados atuais
+            document.getElementById('updateName').value = currentUser.full_name;
+            document.getElementById('updateEmail').value = currentUser.email_address || '';
+            document.getElementById('updatePassword').value = '';
+            showScreen('editUserPanel');
+        });
+        
+        document.getElementById('cancelUpdateBtn').addEventListener('click', () => {
+            showScreen('viewUserPanel');
+        });
+
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                name: document.getElementById('updateName').value,
+                email: document.getElementById('updateEmail').value,
+                password: document.getElementById('updatePassword').value,
+            };
+            
+            for (const key in body) { if (!body[key]) { delete body[key]; } }
+
+            const data = await apiCall(`/users/${currentUser.user_id}`, 'PATCH', body, jwtToken);
+            if (data && data.user_id) { // Um jeito simples de verificar o sucesso
+                currentUser = data;
+                updateUserInfo();
+                showScreen('viewUserPanel');
+            }
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', async () => {
+            if (confirm('Tem certeza que deseja deletar sua conta? Esta ação é irreversível.')) {
+                const data = await apiCall(`/users/${currentUser.user_id}`, 'DELETE', null, jwtToken);
+                if (data && data.message && data.message.includes('deleted')) {
+                    jwtToken = null;
+                    currentUser = null;
+                    showScreen('authPanel');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

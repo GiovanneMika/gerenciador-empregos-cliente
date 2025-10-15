@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login / Cadastro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="panel">
+        <h1>Sistema de Empregos</h1>
+        <form id="loginForm">
+            <h3>Login</h3>
+            <input type="text" id="loginUsername" placeholder="Username" required>
+            <input type="password" id="loginPassword" placeholder="Senha" required>
+            <button type="submit">Login</button>
+        </form>
+        <hr>
+        <form id="registerForm">
+            <h3>Cadastro</h3>
+            <input type="text" id="regName" placeholder="Nome Completo" required>
+            <input type="text" id="regUsername" placeholder="Username" required>
+            <input type="password" id="regPassword" placeholder="Senha" required>
+            <button type="submit">Cadastrar</button>
+        </form>
+        <h2>Resposta do Servidor</h2>
+        <pre id="responseArea"></pre>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const responseArea = document.getElementById('responseArea');
+            const body = {
+                username: document.getElementById('loginUsername').value,
+                password: document.getElementById('loginPassword').value,
+            };
+            const data = await apiCall('/login', 'POST', body);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data && data.status === 'success') {
+                // SALVA O TOKEN E OS DADOS NA "MEMÓRIA DA SESSÃO"
+                sessionStorage.setItem('jwtToken', data.data.token);
+                sessionStorage.setItem('currentUser', JSON.stringify(data.data.user));
+                // REDIRECIONA PARA O PAINEL
+                window.location.href = 'painel.html';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const responseArea = document.getElementById('responseArea');
+            const body = {
+                name: document.getElementById('regName').value,
+                username: document.getElementById('regUsername').value,
+                password: document.getElementById('regPassword').value,
+            };
+            const data = await apiCall('/users', 'POST', body);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+        });
+    </script>
+</body>
+</html>

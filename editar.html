@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Perfil</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="panel">
+        <h2>Editar Perfil</h2>
+        <form id="updateForm">
+            <label for="updateName">Nome Completo:</label>
+            <input type="text" id="updateName" required>
+
+            <label for="updateEmail">Email:</label>
+            <input type="email" id="updateEmail">
+
+            <label for="updatePassword">Nova Senha (deixe em branco para não alterar):</label>
+            <input type="password" id="updatePassword">
+
+            <button type="submit">Salvar Alterações</button>
+            <button type="button" id="cancelBtn" class="secondary">Cancelar</button>
+        </form>
+        <h2>Resposta do Servidor</h2>
+        <pre id="responseArea"></pre>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        const responseArea = document.getElementById('responseArea');
+        let currentUser = null;
+
+        // AO CARREGAR A PÁGINA
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = sessionStorage.getItem('jwtToken');
+            currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+
+            // Se não tiver token, expulsa o usuário para a tela de login
+            if (!token || !currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Preenche o formulário com os dados atuais do usuário
+            document.getElementById('updateName').value = currentUser.full_name;
+            document.getElementById('updateEmail').value = currentUser.email_address || '';
+        });
+
+        // Evento para o botão Cancelar
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            window.location.href = 'painel.html';
+        });
+
+        // Evento para o formulário de atualização
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const body = {
+                name: document.getElementById('updateName').value,
+                email: document.getElementById('updateEmail').value,
+                password: document.getElementById('updatePassword').value,
+            };
+
+            // Remove campos que o usuário deixou em branco para não enviar à API
+            for (const key in body) {
+                if (!body[key]) {
+                    delete body[key];
+                }
+            }
+
+            const data = await apiCall(`/users/${currentUser.user_id}`, 'PATCH', body);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data && data.user_id) { // Um jeito simples de verificar se a resposta foi o objeto do usuário
+                // ATUALIZA OS DADOS NA "MEMÓRIA DA SESSÃO"
+                sessionStorage.setItem('currentUser', JSON.stringify(data));
+                // REDIRECIONA DE VOLTA PARA O PAINEL
+                alert('Dados atualizados com sucesso!');
+                window.location.href = 'painel.html';
+            }
+        });
+    </script>
+</body>
+</html>

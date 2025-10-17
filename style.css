@@ -1,44 +1,130 @@
-/* style.css */
-body { 
-    font-family: sans-serif; 
-    max-width: 500px; 
-    margin: 40px auto; 
-    padding: 20px; 
-    background-color: #f4f4f4; 
+/* Reset básico */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
+
+/* Corpo da página */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    max-width: 600px; 
+    margin: 50px auto; 
+    padding: 20px; 
+    background: linear-gradient(to bottom, #f0f2f5, #e2e6ea);
+    color: #333;
+}
+
+/* Títulos */
 h1, h2, h3 { 
     text-align: center; 
+    margin-bottom: 20px;
+    color: #212529;
 }
+
+/* Painel */
 .panel { 
-    background-color: white; 
-    padding: 20px; 
-    border-radius: 8px; 
-    box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+    background-color: #ffffff; 
+    padding: 30px 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
 }
-input, button { 
+
+/* Inputs e textareas */
+input, textarea { 
     width: 100%; 
-    padding: 10px; 
-    margin-bottom: 10px; 
-    box-sizing: border-box; 
+    padding: 12px 15px; 
+    margin-bottom: 15px; 
+    border: 1px solid #ced4da; 
+    border-radius: 8px; 
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
+
+input:focus, textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.3);
+    outline: none;
+}
+
+/* Botões */
 button { 
-    background-color: #007bff; 
-    color: white; 
+    width: 100%; 
+    padding: 12px; 
+    margin-bottom: 10px; 
     border: none; 
+    border-radius: 8px; 
+    font-size: 16px; 
     cursor: pointer; 
-    border-radius: 4px; 
+    transition: all 0.2s ease;
 }
+
 button:hover { 
-    background-color: #0056b3; 
+    opacity: 0.9;
 }
+
+/* Tipos de botão */
+button.primary {
+    background-color: #007bff; 
+    color: #fff; 
+}
+
+button.primary:hover {
+    background-color: #0056b3;
+}
+
 button.secondary { 
     background-color: #6c757d; 
+    color: #fff; 
 }
+
 button.secondary:hover { 
     background-color: #5a6268; 
 }
-button.danger { background-color: #dc3545; }
-button.danger:hover { background-color: #c82333; }
-#responseArea { background-color: #e9ecef; padding: 10px; border-radius: 5px; min-height: 50px; white-space: pre-wrap; word-wrap: break-word; margin-top: 20px; }
-.user-info p { background-color: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #dee2e6; }
-.user-info strong { color: #495057; }
+
+button.danger { 
+    background-color: #dc3545; 
+    color: #fff; 
+}
+
+button.danger:hover { 
+    background-color: #c82333; 
+}
+
+/* Área de resposta do servidor */
+#responseArea { 
+    background-color: #f1f3f5; 
+    padding: 15px; 
+    border-radius: 8px; 
+    min-height: 60px; 
+    white-space: pre-wrap; 
+    word-wrap: break-word; 
+    margin-top: 25px; 
+    border: 1px solid #dee2e6;
+    font-family: monospace;
+}
+
+/* Info do usuário */
+.user-info p { 
+    background-color: #f8f9fa; 
+    padding: 10px; 
+    border-radius: 8px; 
+    border: 1px solid #dee2e6; 
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.user-info strong { 
+    color: #495057; 
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+    body {
+        margin: 20px;
+        padding: 15px;
+    }
+    .panel {
+        padding: 25px 20px;
+    }
+}

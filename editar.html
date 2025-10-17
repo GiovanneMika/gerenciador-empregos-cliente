@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Editar Perfil</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="panel">
         <h2>Editar Perfil</h2>
@@ -18,9 +20,19 @@
             <label for="updatePassword">Nova Senha (deixe em branco para não alterar):</label>
             <input type="password" id="updatePassword">
 
+            <label for="updatePhone">Telefone:</label>
+            <input type="text" id="updatePhone">
+
+            <label for="updateExperience">Experiência:</label>
+            <textarea id="updateExperience"></textarea>
+
+            <label for="updateEducation">Formação:</label>
+            <textarea id="updateEducation"></textarea>
+
             <button type="submit">Salvar Alterações</button>
             <button type="button" id="cancelBtn" class="secondary">Cancelar</button>
         </form>
+
         <h2>Resposta do Servidor</h2>
         <pre id="responseArea"></pre>
     </div>
@@ -28,57 +40,86 @@
     <script src="api.js"></script>
     <script>
         const responseArea = document.getElementById('responseArea');
-        let currentUser = null;
+        let userId = null;
 
-        // AO CARREGAR A PÁGINA
-        document.addEventListener('DOMContentLoaded', () => {
+        // Decodifica JWT
+        function parseJwt(token) {
+            try {
+                return JSON.parse(atob(token.split('.')[1]));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const token = sessionStorage.getItem('jwtToken');
-            currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
 
-            // Se não tiver token, expulsa o usuário para a tela de login
-            if (!token || !currentUser) {
+            if (!token) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Preenche o formulário com os dados atuais do usuário
-            document.getElementById('updateName').value = currentUser.full_name;
-            document.getElementById('updateEmail').value = currentUser.email_address || '';
+            const payload = parseJwt(token);
+            if (!payload || !payload.sub) {
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+                return;
+            }
+
+            userId = payload.sub;
+
+            // Busca dados do usuário
+            const data = await apiCall(`/users/${userId}`, 'GET');
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (!data || data.message) {
+                alert(data?.message || 'Não foi possível carregar os dados do usuário');
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Preenche campos do formulário
+            document.getElementById('updateName').value = data.name || '';
+            document.getElementById('updateEmail').value = data.email || '';
+            document.getElementById('updatePhone').value = data.phone || '';
+            document.getElementById('updateExperience').value = data.experience || '';
+            document.getElementById('updateEducation').value = data.education || '';
         });
 
-        // Evento para o botão Cancelar
         document.getElementById('cancelBtn').addEventListener('click', () => {
             window.location.href = 'painel.html';
         });
 
-        // Evento para o formulário de atualização
         document.getElementById('updateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const body = {
-                name: document.getElementById('updateName').value,
-                email: document.getElementById('updateEmail').value,
-                password: document.getElementById('updatePassword').value,
+                name: document.getElementById('updateName').value.trim() || null,
+                email: document.getElementById('updateEmail').value.trim() || null,
+                password: document.getElementById('updatePassword').value.trim() || null,
+                phone: document.getElementById('updatePhone').value.trim() || null,
+                experience: document.getElementById('updateExperience').value.trim() || null,
+                education: document.getElementById('updateEducation').value.trim() || null
             };
 
-            // Remove campos que o usuário deixou em branco para não enviar à API
-            for (const key in body) {
-                if (!body[key]) {
-                    delete body[key];
-                }
-            }
+            Object.keys(body).forEach(key => {
+                if (body[key] === null) delete body[key];
+            });
 
-            const data = await apiCall(`/users/${currentUser.user_id}`, 'PATCH', body);
+            const data = await apiCall(`/users/${userId}`, 'PATCH', body);
             responseArea.textContent = JSON.stringify(data, null, 2);
 
-            if (data && data.user_id) { // Um jeito simples de verificar se a resposta foi o objeto do usuário
-                // ATUALIZA OS DADOS NA "MEMÓRIA DA SESSÃO"
+            if (data && !data.message) {
                 sessionStorage.setItem('currentUser', JSON.stringify(data));
-                // REDIRECIONA DE VOLTA PARA O PAINEL
-                alert('Dados atualizados com sucesso!');
+                alert('✅ Dados atualizados com sucesso!');
                 window.location.href = 'painel.html';
+            } else {
+                alert(`⚠️ Erro ao atualizar: ${data.message}`);
             }
         });
+
     </script>
 </body>
+
 </html>

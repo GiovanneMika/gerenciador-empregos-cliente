@@ -1,26 +1,29 @@
 // api.js
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_BASE = 'http://127.0.0.1:8000'; // ajuste conforme seu servidor
 
 async function apiCall(endpoint, method = 'GET', body = null) {
-    const jwtToken = sessionStorage.getItem('jwtToken');
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    };
-    if (jwtToken) {
-        headers['Authorization'] = `Bearer ${jwtToken}`;
-    }
+    const token = sessionStorage.getItem('jwtToken');
+    const headers = { 'Content-Type': 'application/json' };
 
-    const options = {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : null
-    };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const options = { method, headers };
+    if (body) options.body = JSON.stringify(body);
 
     try {
-        const response = await fetch(API_URL + endpoint, options);
-        return await response.json();
-    } catch (error) {
-        return { error: 'Erro de rede ou JSON inválido', details: error.message };
+        const response = await fetch(API_BASE + endpoint, options);
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            // Retorna a mensagem exata do backend se existir
+            if (data.message) return data;
+
+            // fallback
+            return { message: `Erro ${response.status}: ${response.statusText}` };
+        }
+
+        return data;
+    } catch (err) {
+        return { message: 'Falha na conexão com o servidor. Verifique sua internet.' };
     }
 }

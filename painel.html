@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Painel do Usuário</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="panel">
         <h2>Painel do Usuário</h2>
@@ -22,47 +24,69 @@
         const userInfoDiv = document.getElementById('userInfo');
         const responseArea = document.getElementById('responseArea');
 
-        // AO CARREGAR A PÁGINA
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const token = sessionStorage.getItem('jwtToken');
-            const user = JSON.parse(sessionStorage.getItem('currentUser'));
+            const userId = sessionStorage.getItem('userId');
 
-            // Se não tiver token, expulsa o usuário para a tela de login
-            if (!token || !user) {
+            if (!token || !userId) {
                 window.location.href = 'login.html';
                 return;
             }
-            
-            // Exibe os dados do usuário
-            userInfoDiv.innerHTML = `
-                <p><strong>ID:</strong> ${user.user_id}</p>
-                <p><strong>Nome:</strong> ${user.full_name}</p>
-                <p><strong>Username:</strong> ${user.username}</p>
-                <p><strong>Email:</strong> ${user.email_address || 'Não informado'}</p>
-            `;
+
+            // Busca dados reais do usuário
+            const data = await apiCall(`/users/${userId}`, 'GET');
+            responseArea.innerText = JSON.stringify(data, null, 2);
+
+            if (data && data.username) {
+                userInfoDiv.innerHTML = `
+            <p><strong>Nome:</strong> ${data.name}</p>
+            <p><strong>Username:</strong> ${data.username}</p>
+            <p><strong>Email:</strong> ${data.email || 'Não informado'}</p>
+            <p><strong>Telefone:</strong> ${data.phone || 'Não informado'}</p>
+            <p><strong>Experiência:</strong> ${data.experience || 'Não informada'}</p>
+            <p><strong>Formação:</strong> ${data.education || 'Não informada'}</p>
+        `;
+                // Atualiza sessão com os dados do usuário
+                sessionStorage.setItem('currentUser', JSON.stringify(data));
+            } else {
+                // Token inválido ou usuário não encontrado
+                alert('Token inválido ou usuário não encontrado');
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+            }
         });
 
+        // Botão editar
         document.getElementById('editBtn').addEventListener('click', () => {
             window.location.href = 'editar.html';
         });
 
+        // Logout
         document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await apiCall('/logout', 'POST');
-            sessionStorage.clear(); // Limpa a memória
+            const data = await apiCall('/logout', 'POST');
+            responseArea.innerText = JSON.stringify(data, null, 2);
+            alert(data.message || 'Sessão encerrada');
+            sessionStorage.clear();
             window.location.href = 'login.html';
         });
 
+        // Deletar usuário
         document.getElementById('deleteBtn').addEventListener('click', async () => {
-            if (confirm('Tem certeza que deseja deletar sua conta? Esta ação é irreversível.')) {
-                const user = JSON.parse(sessionStorage.getItem('currentUser'));
-                const data = await apiCall(`/users/${user.user_id}`, 'DELETE');
-                responseArea.textContent = JSON.stringify(data, null, 2);
-                if (data && data.message && data.message.includes('deleted')) {
+            if (confirm('Tem certeza que deseja deletar sua conta?')) {
+                const userId = sessionStorage.getItem('userId');
+                const data = await apiCall(`/users/${userId}`, 'DELETE');
+                responseArea.innerText = JSON.stringify(data, null, 2);
+
+                if (data.message && data.message.includes('deleted')) {
+                    alert('Conta deletada com sucesso.');
                     sessionStorage.clear();
                     window.location.href = 'login.html';
+                } else {
+                    alert(data.message || 'Erro ao deletar conta');
                 }
             }
         });
     </script>
 </body>
+
 </html>

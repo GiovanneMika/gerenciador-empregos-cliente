@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro - Sistema de Empregos</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/a2e0e6ad4b.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="panel">
+        <h1>🧍 Cadastro</h1>
+        <form id="registerForm">
+            <div class="form-group">
+                <input type="text" id="regName" placeholder=" " required>
+                <label for="regName">Nome Completo</label>
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="regUsername" placeholder=" " required>
+                <label for="regUsername">Username</label>
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="regPassword" placeholder=" " required>
+                <label for="regPassword">Senha</label>
+                <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="email" id="regEmail" placeholder=" ">
+                <label for="regEmail">Email (opcional)</label>
+                <i class="fa-solid fa-envelope"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="regPhone" placeholder=" ">
+                <label for="regPhone">Telefone (opcional)</label>
+                <i class="fa-solid fa-phone"></i>
+            </div>
+
+            <div class="form-group">
+                <textarea id="regExperience" placeholder=" "></textarea>
+                <label for="regExperience">Experiência (opcional)</label>
+            </div>
+
+            <div class="form-group">
+                <textarea id="regEducation" placeholder=" "></textarea>
+                <label for="regEducation">Formação (opcional)</label>
+            </div>
+
+            <button type="submit"><i class="fa-solid fa-user-plus"></i> Cadastrar</button>
+        </form>
+
+        <p class="link">Já tem conta? <a href="login.html">Faça login</a></p>
+
+        <pre id="responseArea"></pre>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        // Redireciona se já estiver logado
+        if (sessionStorage.getItem('jwtToken')) {
+            window.location.href = 'painel.html';
+        }
+
+        const responseArea = document.getElementById('responseArea');
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                name: regName.value.trim(),
+                username: regUsername.value.trim(),
+                password: regPassword.value.trim(),
+                email: regEmail.value.trim() || null,
+                phone: regPhone.value.trim() || null,
+                experience: regExperience.value.trim() || null,
+                education: regEducation.value.trim() || null
+            };
+            Object.keys(body).forEach(k => body[k] === null && delete body[k]);
+
+            const data = await apiCall('/users', 'POST', body);
+            responseArea.textContent = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
+
+            if (data?.message === 'Created') {
+                alert('✅ Usuário cadastrado com sucesso! Agora você pode fazer login.');
+                window.location.href = 'login.html';
+            } else if (data?.details) {
+                const errors = data.details.map(d => `• ${d.field}: ${d.error}`).join('\n');
+                alert(`⚠️ Erro de validação:\n${errors}`);
+            } else {
+                alert(`⚠️ Erro no cadastro: ${data.message || 'Falha desconhecida'}`);
+            }
+        });
+    </script>
+</body>
+</html>

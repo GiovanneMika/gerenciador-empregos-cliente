@@ -1,130 +1,132 @@
-/* Reset básico */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/* === Reset === */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Corpo da página */
+/* === Corpo === */
 body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    max-width: 600px; 
-    margin: 50px auto; 
-    padding: 20px; 
-    background: linear-gradient(to bottom, #f0f2f5, #e2e6ea);
+    font-family: 'Segoe UI', Roboto, sans-serif; 
+    background: linear-gradient(135deg, #007bff, #6f42c1);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     color: #333;
 }
 
-/* Títulos */
-h1, h2, h3 { 
-    text-align: center; 
+/* === Painel principal === */
+.panel {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 420px;
+    animation: fadeIn 0.4s ease;
+}
+
+/* === Títulos === */
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #343a40;
+}
+h3 {
+    text-align: center;
+    color: #555;
     margin-bottom: 20px;
-    color: #212529;
 }
 
-/* Painel */
-.panel { 
-    background-color: #ffffff; 
-    padding: 30px 25px; 
-    border-radius: 12px; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+/* === Campos com labels flutuantes === */
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
 }
-
-/* Inputs e textareas */
-input, textarea { 
-    width: 100%; 
-    padding: 12px 15px; 
-    margin-bottom: 15px; 
-    border: 1px solid #ced4da; 
-    border-radius: 8px; 
-    font-size: 16px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-input:focus, textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0,123,255,0.3);
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 12px 40px 12px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    background-color: #fff;
     outline: none;
+    transition: all 0.2s;
+}
+.form-group input:focus, .form-group textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0,123,255,0.4);
+}
+.form-group label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    color: #777;
+    font-size: 14px;
+    transition: all 0.2s;
+    pointer-events: none;
+    background: white;
+    padding: 0 4px;
+}
+.form-group input:focus+label,
+.form-group input:not(:placeholder-shown)+label,
+.form-group textarea:focus+label,
+.form-group textarea:not(:placeholder-shown)+label {
+    top: -8px;
+    left: 10px;
+    font-size: 12px;
+    color: #007bff;
+}
+textarea { resize: vertical; }
+
+/* === Ícones nos campos === */
+.form-group i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
 }
 
-/* Botões */
-button { 
-    width: 100%; 
-    padding: 12px; 
-    margin-bottom: 10px; 
-    border: none; 
-    border-radius: 8px; 
-    font-size: 16px; 
-    cursor: pointer; 
-    transition: all 0.2s ease;
+/* === Botões === */
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
-
-button:hover { 
-    opacity: 0.9;
-}
-
-/* Tipos de botão */
-button.primary {
-    background-color: #007bff; 
-    color: #fff; 
-}
-
-button.primary:hover {
+button:hover {
     background-color: #0056b3;
 }
 
-button.secondary { 
-    background-color: #6c757d; 
-    color: #fff; 
+/* === Links === */
+p.link {
+    text-align: center;
+    margin-top: 15px;
+}
+p.link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+p.link a:hover {
+    text-decoration: underline;
 }
 
-button.secondary:hover { 
-    background-color: #5a6268; 
-}
-
-button.danger { 
-    background-color: #dc3545; 
-    color: #fff; 
-}
-
-button.danger:hover { 
-    background-color: #c82333; 
-}
-
-/* Área de resposta do servidor */
-#responseArea { 
-    background-color: #f1f3f5; 
-    padding: 15px; 
-    border-radius: 8px; 
-    min-height: 60px; 
-    white-space: pre-wrap; 
-    word-wrap: break-word; 
-    margin-top: 25px; 
+/* === Resposta === */
+#responseArea {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    margin-top: 20px;
     border: 1px solid #dee2e6;
-    font-family: monospace;
 }
 
-/* Info do usuário */
-.user-info p { 
-    background-color: #f8f9fa; 
-    padding: 10px; 
-    border-radius: 8px; 
-    border: 1px solid #dee2e6; 
-    margin-bottom: 10px;
-    font-size: 15px;
-}
-
-.user-info strong { 
-    color: #495057; 
-}
-
-/* Responsividade */
-@media (max-width: 640px) {
-    body {
-        margin: 20px;
-        padding: 15px;
-    }
-    .panel {
-        padding: 25px 20px;
-    }
+/* === Animação === */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

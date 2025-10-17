@@ -4,19 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Painel do Usuário</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="painel.css">
 </head>
 
 <body>
     <div class="panel">
-        <h2>Painel do Usuário</h2>
+        <h2>👤 Painel do Usuário</h2>
         <div id="userInfo" class="user-info"></div>
+
         <hr>
-        <button id="editBtn">Editar Dados</button>
-        <button id="deleteBtn" class="danger">Deletar Conta</button>
-        <button id="logoutBtn" class="secondary">Logout</button>
-        <h2>Resposta do Servidor</h2>
-        <pre id="responseArea"></pre>
+
+        <button id="editBtn">✏️ Editar Dados</button>
+        <button id="deleteBtn" class="danger">🗑️ Deletar Conta</button>
+        <button id="logoutBtn" class="secondary">🚪 Logout</button>
+
+        <h2>📡 Resposta do Servidor</h2>
+        <pre id="responseArea">Aguardando resposta...</pre>
     </div>
 
     <script src="api.js"></script>
@@ -33,56 +36,49 @@
                 return;
             }
 
-            // Busca dados reais do usuário
             const data = await apiCall(`/users/${userId}`, 'GET');
-            responseArea.innerText = JSON.stringify(data, null, 2);
+            responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
             if (data && data.username) {
                 userInfoDiv.innerHTML = `
-            <p><strong>Nome:</strong> ${data.name}</p>
-            <p><strong>Username:</strong> ${data.username}</p>
-            <p><strong>Email:</strong> ${data.email || 'Não informado'}</p>
-            <p><strong>Telefone:</strong> ${data.phone || 'Não informado'}</p>
-            <p><strong>Experiência:</strong> ${data.experience || 'Não informada'}</p>
-            <p><strong>Formação:</strong> ${data.education || 'Não informada'}</p>
-        `;
-                // Atualiza sessão com os dados do usuário
-                sessionStorage.setItem('currentUser', JSON.stringify(data));
+                    <p><strong>Nome:</strong> ${data.name}</p>
+                    <p><strong>Usuário:</strong> ${data.username}</p>
+                    <p><strong>Email:</strong> ${data.email || 'Não informado'}</p>
+                    <p><strong>Telefone:</strong> ${data.phone || 'Não informado'}</p>
+                    <p><strong>Experiência:</strong> ${data.experience || 'Não informada'}</p>
+                    <p><strong>Formação:</strong> ${data.education || 'Não informada'}</p>
+                `;
             } else {
-                // Token inválido ou usuário não encontrado
-                alert('Token inválido ou usuário não encontrado');
+                alert('Token inválido ou usuário não encontrado.');
                 sessionStorage.clear();
                 window.location.href = 'login.html';
             }
         });
 
-        // Botão editar
         document.getElementById('editBtn').addEventListener('click', () => {
             window.location.href = 'editar.html';
         });
 
-        // Logout
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             const data = await apiCall('/logout', 'POST');
-            responseArea.innerText = JSON.stringify(data, null, 2);
-            alert(data.message || 'Sessão encerrada');
+            responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
+            alert(data.message || 'Sessão encerrada.');
             sessionStorage.clear();
             window.location.href = 'login.html';
         });
 
-        // Deletar usuário
         document.getElementById('deleteBtn').addEventListener('click', async () => {
             if (confirm('Tem certeza que deseja deletar sua conta?')) {
                 const userId = sessionStorage.getItem('userId');
                 const data = await apiCall(`/users/${userId}`, 'DELETE');
-                responseArea.innerText = JSON.stringify(data, null, 2);
+                responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
                 if (data.message && data.message.includes('deleted')) {
                     alert('Conta deletada com sucesso.');
                     sessionStorage.clear();
                     window.location.href = 'login.html';
                 } else {
-                    alert(data.message || 'Erro ao deletar conta');
+                    alert(data.message || 'Erro ao deletar conta.');
                 }
             }
         });

@@ -66,6 +66,7 @@
             const data = await apiCall(`/users/${userId}`, 'GET');
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
+            // Verifica se retornou dados válidos (deve ter id ou email)
             if (!data || data.message) {
                 alert(data?.message || 'Erro ao carregar dados.');
                 sessionStorage.clear();
@@ -101,12 +102,25 @@
             const data = await apiCall(`/users/${userId}`, 'PATCH', body);
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
-            if (data && !data.message) {
-                sessionStorage.setItem('currentUser', JSON.stringify(data));
+            // Debug: vamos ver o que está retornando
+            console.log('Resposta do servidor:', data);
+            console.log('Tem ID?', data?.id);
+            console.log('Tipo do ID:', typeof data?.id);
+
+            // Verifica se a atualização foi bem-sucedida
+            // O servidor retorna {message: 'User updated successfully'} em caso de sucesso
+            if (data && (data.id || data.email || data.message === 'User updated successfully')) {
+                // Se não retornou os dados completos, busca novamente
+                if (!data.id) {
+                    const userData = await apiCall(`/users/${userId}`, 'GET');
+                    sessionStorage.setItem('currentUser', JSON.stringify(userData));
+                } else {
+                    sessionStorage.setItem('currentUser', JSON.stringify(data));
+                }
                 alert('✅ Dados atualizados com sucesso!');
                 window.location.href = 'painel.html';
             } else {
-                alert(`⚠️ Erro ao atualizar: ${data.message}`);
+                alert(`⚠️ Erro ao atualizar: ${data?.message || 'Erro desconhecido'}`);
             }
         });
     </script>

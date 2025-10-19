@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Empregos</title>
+    <script src="assets/js/api.js"></script>
+    <script>
+        // Redireciona automaticamente
+        if (sessionStorage.getItem('jwtToken')) {
+            // Usuário logado -> vai para o painel
+            window.location.href = 'pages/painel.html';
+        } else {
+            // Usuário não logado -> vai para login
+            window.location.href = 'pages/login.html';
+        }
+    </script>
+</head>
+<body>
+    <p>Redirecionando...</p>
+</body>
+</html>

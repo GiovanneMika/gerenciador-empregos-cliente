@@ -1,0 +1,158 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║          🌐 GUIA RÁPIDO - CONFIGURAÇÃO DO SERVIDOR               ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+📌 COMO CONFIGURAR O SERVIDOR
+─────────────────────────────────────────────────────────────────────
+
+1. Abra qualquer página (login.html, cadastro.html ou painel.html)
+
+2. Clique no indicador de servidor no canto inferior direito
+   OU
+   Clique no link "⚙️ Configurar Servidor"
+
+3. Digite a URL completa do servidor da API
+
+4. Clique em "Testar Conexão" para verificar
+
+5. Se conectar com sucesso, clique em "Salvar"
+
+6. Pronto! A configuração fica salva no navegador
+
+
+✅ EXEMPLOS DE URLs VÁLIDAS
+─────────────────────────────────────────────────────────────────────
+
+Servidor Local:
+  http://localhost:8000
+
+Servidor na Rede Local:
+  http://192.168.1.10:8000
+  http://192.168.0.25:8000
+
+Servidor Remoto (Hamachi/Radmin VPN):
+  http://26.13.125.160:8000
+  http://25.45.67.89:8000
+
+Servidor com Domínio:
+  http://api.meuservidor.com:8000
+  https://meubackend.com:8000
+
+
+⚠️ IMPORTANTE
+─────────────────────────────────────────────────────────────────────
+
+✅ USE:
+  • http:// ou https:// no início
+  • IP:PORTA ou DOMÍNIO:PORTA
+  
+❌ NÃO USE:
+  • /api no final
+  • Porta sem o IP/domínio
+  • Espaços na URL
+
+
+🔧 PARA DESCOBRIR SEU IP
+─────────────────────────────────────────────────────────────────────
+
+Windows (PowerShell/CMD):
+  ipconfig
+
+Linux/Mac (Terminal):
+  ifconfig
+  ou
+  ip addr show
+
+Hamachi/Radmin VPN:
+  • Abra o programa
+  • Veja seu IP virtual
+  • Use esse IP no cliente
+
+
+👥 TRABALHANDO EM EQUIPE
+─────────────────────────────────────────────────────────────────────
+
+CENÁRIO: Dois colegas na mesma rede
+
+Colega A (Servidor):
+  1. Descobre seu IP local: 192.168.1.10
+  2. Inicia o servidor backend na porta 8000
+  3. Servidor rodando em: http://192.168.1.10:8000
+
+Colega B (Cliente):
+  1. Abre o frontend (login.html)
+  2. Clica em "⚙️ Configurar Servidor"
+  3. Digita: http://192.168.1.10:8000
+  4. Testa a conexão
+  5. Salva
+  6. Usa o sistema normalmente!
+
+
+CENÁRIO: Dois colegas usando Hamachi/Radmin VPN
+
+Colega A (Servidor):
+  1. Conecta no Hamachi/Radmin
+  2. Vê seu IP virtual: 26.13.125.160
+  3. Inicia o servidor backend na porta 8000
+  4. Servidor rodando em: http://26.13.125.160:8000
+
+Colega B (Cliente):
+  1. Conecta na MESMA rede Hamachi/Radmin
+  2. Abre o frontend
+  3. Configura servidor: http://26.13.125.160:8000
+  4. Pronto!
+
+
+🚨 SOLUÇÃO DE PROBLEMAS
+─────────────────────────────────────────────────────────────────────
+
+❌ "Falha na conexão"
+   Verifique:
+   • O servidor backend está rodando?
+   • O IP está correto?
+   • A porta está correta?
+   • Firewall está bloqueando?
+   • Está na mesma rede (ou mesma VPN)?
+
+❌ "Invalid Token"
+   Solução:
+   • Faça login novamente
+   • Token expira em 60 minutos
+
+❌ Servidor não responde
+   Verifique:
+   • Backend está realmente rodando?
+   • Porta não está sendo usada por outro programa?
+   • CORS está habilitado no backend?
+
+
+📋 CHECKLIST RÁPIDO
+─────────────────────────────────────────────────────────────────────
+
+Backend (Servidor):
+  [ ] Backend instalado e configurado
+  [ ] Banco de dados rodando
+  [ ] Servidor iniciado na porta 8000
+  [ ] IP do servidor identificado
+  [ ] Firewall configurado (se necessário)
+
+Frontend (Cliente):
+  [ ] Arquivos HTML abertos no navegador
+  [ ] Servidor configurado em "Configurar Servidor"
+  [ ] Teste de conexão bem-sucedido
+  [ ] Conta criada ou login realizado
+  [ ] Sistema funcionando!
+
+
+📞 SUPORTE
+─────────────────────────────────────────────────────────────────────
+
+• Verifique o README.md para documentação completa
+• Consulte a documentação da API do backend
+• Entre em contato com o time de desenvolvimento
+
+
+═══════════════════════════════════════════════════════════════════
+Versão 1.0.0 - Sistema de Gerenciamento de Empregos
+Tecnologias Cliente Servidor - 2025
+═══════════════════════════════════════════════════════════════════

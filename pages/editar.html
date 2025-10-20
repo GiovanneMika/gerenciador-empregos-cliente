@@ -64,6 +64,7 @@
 
             userId = payload.sub;
             const data = await apiCall(`/users/${userId}`, 'GET');
+            delete data.status;
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
             // Verifica se retornou dados válidos (deve ter id ou email)
@@ -88,6 +89,15 @@
         document.getElementById('updateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // const body = {
+            //     name: updateName.value.trim() || "",
+            //     email: updateEmail.value.trim() || "",
+            //     password: updatePassword.value.trim() || "",
+            //     phone: updatePhone.value.trim() || "",
+            //     experience: updateExperience.value.trim() || "",
+            //     education: updateEducation.value.trim() || ""
+            // };
+
             const body = {
                 name: updateName.value.trim() || null,
                 email: updateEmail.value.trim() || null,
@@ -97,19 +107,14 @@
                 education: updateEducation.value.trim() || null
             };
 
-            Object.keys(body).forEach(k => body[k] === null && delete body[k]);
-
             const data = await apiCall(`/users/${userId}`, 'PATCH', body);
+            const status = data.status;
+            delete data.status;
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
-
-            // Debug: vamos ver o que está retornando
-            console.log('Resposta do servidor:', data);
-            console.log('Tem ID?', data?.id);
-            console.log('Tipo do ID:', typeof data?.id);
 
             // Verifica se a atualização foi bem-sucedida
             // O servidor retorna {message: 'User updated successfully'} em caso de sucesso
-            if (data && (data.id || data.email || data.message === 'User updated successfully')) {
+            if (data && status == 200) {
                 // Se não retornou os dados completos, busca novamente
                 if (!data.id) {
                     const userData = await apiCall(`/users/${userId}`, 'GET');

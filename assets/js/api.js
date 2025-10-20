@@ -58,7 +58,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 
     try {
         const response = await fetch(API_BASE + endpoint, options);
-        const data = await response.json().catch(() => ({}));
+        let data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
             // Retorna a mensagem exata do backend se existir
@@ -66,6 +66,12 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 
             // fallback
             return { message: `Erro ${response.status}: ${response.statusText}` };
+        }
+
+        data = {
+            ...data,
+            // Inclui status code para respostas bem-sucedidas também
+            status: response.status
         }
 
         return data;

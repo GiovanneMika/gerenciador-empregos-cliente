@@ -37,6 +37,7 @@
             }
 
             const data = await apiCall(`/users/${userId}`, 'GET');
+            delete data.status;
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
             if (data && data.username) {

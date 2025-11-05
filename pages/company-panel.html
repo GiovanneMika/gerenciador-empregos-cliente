@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Painel da Empresa</title>
+    <link rel="stylesheet" href="../assets/css/painel.css">
+</head>
+
+<body>
+    <div class="panel">
+        <h2>🏢 Painel da Empresa</h2>
+        <div id="companyInfo" class="user-info"></div>
+
+        <hr>
+
+        <button id="editBtn">✏️ Editar Dados</button>
+        <button id="deleteBtn" class="danger">🗑️ Deletar Empresa</button>
+        <button id="logoutBtn" class="secondary">🚪 Logout</button>
+
+        <h2>📡 Resposta do Servidor</h2>
+        <pre id="responseArea">Aguardando resposta...</pre>
+    </div>
+
+    <script src="../assets/js/company-api.js"></script>
+    <script>
+        const companyInfoDiv = document.getElementById('companyInfo');
+        const responseArea = document.getElementById('responseArea');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = sessionStorage.getItem('companyToken');
+            const companyId = sessionStorage.getItem('companyId');
+
+            if (!token || !companyId || !isTokenValid()) {
+                alert('❌ Sessão inválida. Redirecionando para login...');
+                window.location.href = 'company-login.html';
+                return;
+            }
+
+            // Busca dados da empresa
+            const data = await companyApiCall(`/companies/${companyId}`, 'GET');
+            responseArea.innerText = JSON.stringify(data, null, 2);
+
+            if (data.status === 200 && data.name) {
+                companyInfoDiv.innerHTML = `
+                    <p><strong>Nome:</strong> ${data.name}</p>
+                    <p><strong>Ramo:</strong> ${data.business}</p>
+                    <p><strong>Username:</strong> ${data.username}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p><strong>Telefone:</strong> ${data.phone}</p>
+                    <p><strong>Endereço:</strong> ${data.street}, ${data.number} - ${data.city}/${data.state}</p>
+                `;
+            } else if (data.status === 401) {
+                alert('❌ Token inválido. Redirecionando para login...');
+                sessionStorage.clear();
+                window.location.href = 'company-login.html';
+            } else if (data.status === 404) {
+                alert('❌ Empresa não encontrada.');
+                sessionStorage.clear();
+                window.location.href = 'company-login.html';
+            } else {
+                alert(`❌ Erro ao carregar dados: ${data.message || 'Erro desconhecido'}`);
+            }
+        });
+
+        document.getElementById('editBtn').addEventListener('click', () => {
+            window.location.href = 'company-edit.html';
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            const data = await companyLogout();
+            responseArea.innerText = JSON.stringify(data, null, 2);
+            
+            alert('✅ Logout realizado com sucesso.');
+            window.location.href = 'company-login.html';
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', async () => {
+            if (confirm('❌ ATENÇÃO: Tem certeza que deseja deletar sua empresa?\n\nEsta ação é IRREVERSÍVEL e todos os dados serão perdidos!')) {
+                const companyId = sessionStorage.getItem('companyId');
+                const data = await companyApiCall(`/companies/${companyId}`, 'DELETE');
+                responseArea.innerText = JSON.stringify(data, null, 2);
+
+                if (data.status === 200) {
+                    alert('✅ Empresa deletada com sucesso.');
+                    sessionStorage.clear();
+                    window.location.href = 'company-login.html';
+                } else if (data.status === 409) {
+                    alert('❌ Não é possível deletar a empresa: ela possui vagas ativas.');
+                } else {
+                    alert(`❌ Erro ao deletar empresa: ${data.message || 'Erro desconhecido'}`);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

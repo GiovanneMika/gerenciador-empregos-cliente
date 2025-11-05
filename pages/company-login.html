@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Empresa - Sistema de Empregos</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://kit.fontawesome.com/a2e0e6ad4b.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Indicador de Servidor -->
+    <div class="server-indicator" onclick="window.location.href='config-server.html'" title="Clique para configurar">
+        <span class="status-dot"></span>
+        <span id="serverUrl">Carregando...</span>
+    </div>
+
+    <div class="panel">
+        <h1>🏢 Login Empresa</h1>
+        <form id="companyLoginForm">
+            <div class="form-group">
+                <input type="text" id="loginUsername" placeholder=" " required>
+                <label for="loginUsername">Username</label>
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="loginPassword" placeholder=" " required>
+                <label for="loginPassword">Senha</label>
+                <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <button type="submit"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+        </form>
+
+        <p class="link">Não tem conta? <a href="company-register.html">Cadastre sua empresa</a></p>
+        <p class="link"><a href="login.html">🧍 Login como Candidato</a></p>
+        <p class="link"><a href="config-server.html">⚙️ Configurar Servidor</a></p>
+
+        <pre id="responseArea"></pre>
+    </div>
+
+    <script src="../assets/js/company-api.js"></script>
+    <script>
+        // Atualiza indicador de servidor
+        document.getElementById('serverUrl').textContent = getApiBase();
+
+        // Redireciona se já estiver logado
+        if (sessionStorage.getItem('companyToken') && isTokenValid()) {
+            window.location.href = 'company-panel.html';
+        }
+
+        const responseArea = document.getElementById('responseArea');
+
+        document.getElementById('companyLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const body = {
+                username: document.getElementById('loginUsername').value.trim(),
+                password: document.getElementById('loginPassword').value.trim()
+            };
+
+            const data = await companyApiCall('/login', 'POST', body);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data.status === 200 && data.token) {
+                // Decodifica o token para obter informações da empresa
+                const payload = parseJwt(data.token);
+                
+                if (payload && payload.role === 'company') {
+                    // Salva dados da sessão
+                    sessionStorage.setItem('companyToken', data.token);
+                    sessionStorage.setItem('companyId', payload.sub);
+                    sessionStorage.setItem('companyUsername', payload.username);
+                    
+                    alert('✅ Login realizado com sucesso!');
+                    window.location.href = 'company-panel.html';
+                } else {
+                    alert('❌ Token inválido. Tente novamente.');
+                }
+            } else if (data.status === 401) {
+                alert('❌ Credenciais inválidas. Verifique username e senha.');
+            } else {
+                alert(`❌ Erro no login: ${data.message || 'Falha desconhecida'}`);
+            }
+        });
+    </script>
+</body>
+</html>

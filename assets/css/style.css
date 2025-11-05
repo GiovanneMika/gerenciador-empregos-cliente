@@ -105,7 +105,8 @@ h3 {
 }
 
 .form-group input, 
-.form-group textarea {
+.form-group textarea,
+.form-group select {
     width: 100%;
     padding: 14px 44px 14px 14px;
     border: 2px solid var(--border-color);
@@ -118,7 +119,8 @@ h3 {
 }
 
 .form-group input:focus, 
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
     border-color: var(--focus-color);
     background-color: #fff;
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
@@ -141,13 +143,31 @@ h3 {
 .form-group input:focus + label,
 .form-group input:not(:placeholder-shown) + label,
 .form-group textarea:focus + label,
-.form-group textarea:not(:placeholder-shown) + label {
+.form-group textarea:not(:placeholder-shown) + label,
+.form-group select:focus + label,
+.form-group select:not([value=""]) + label {
     top: -10px;
     left: 12px;
     font-size: 12px;
     color: var(--focus-color);
     background: linear-gradient(to bottom, transparent 50%, white 50%);
     font-weight: 600;
+}
+
+/* Select específico */
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+}
+
+.form-group select:focus {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 textarea { 

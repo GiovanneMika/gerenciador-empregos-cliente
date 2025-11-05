@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Empregos</title>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/company-api.js"></script>
     <script>
-        // Redireciona automaticamente
-        if (sessionStorage.getItem('jwtToken')) {
-            // Usuário logado -> vai para o painel
+        // Redireciona automaticamente baseado no tipo de usuário
+        const userToken = sessionStorage.getItem('jwtToken');
+        const companyToken = sessionStorage.getItem('companyToken');
+
+        if (companyToken) {
+            // Empresa logada -> vai para o painel da empresa
+            window.location.href = 'pages/company-panel.html';
+        } else if (userToken) {
+            // Usuário logado -> vai para o painel do usuário
             window.location.href = 'pages/painel.html';
         } else {
-            // Usuário não logado -> vai para login
-            window.location.href = 'pages/login.html';
+            // Ninguém logado -> vai para seleção de tipo de login
+            window.location.href = 'pages/login-selection.html';
         }
     </script>
 </head>

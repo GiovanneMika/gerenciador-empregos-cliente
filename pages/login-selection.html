@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Escolha o Tipo de Login - Sistema de Empregos</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://kit.fontawesome.com/a2e0e6ad4b.js" crossorigin="anonymous"></script>
+    <style>
+        .login-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .login-option {
+            padding: 24px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        }
+
+        .login-option:hover {
+            border-color: var(--focus-color);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+            background: white;
+        }
+
+        .login-option i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--focus-color);
+        }
+
+        .login-option h3 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            color: var(--text-primary);
+        }
+
+        .login-option p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        @media (min-width: 600px) {
+            .login-options {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Indicador de Servidor -->
+    <div class="server-indicator" onclick="window.location.href='config-server.html'" title="Clique para configurar">
+        <span class="status-dot"></span>
+        <span id="serverUrl">Carregando...</span>
+    </div>
+
+    <div class="panel">
+        <h1>🚀 Sistema de Empregos</h1>
+        <h3>Escolha como deseja acessar o sistema:</h3>
+
+        <div class="login-options">
+            <a href="login.html" class="login-option">
+                <i class="fa-solid fa-user"></i>
+                <h3>Sou Candidato</h3>
+                <p>Busco vagas de emprego<br>Quero gerenciar meu perfil profissional</p>
+            </a>
+
+            <a href="company-login.html" class="login-option">
+                <i class="fa-solid fa-building"></i>
+                <h3>Sou Empresa</h3>
+                <p>Publico vagas de emprego<br>Quero gerenciar minha empresa</p>
+            </a>
+        </div>
+
+        <p class="link"><a href="config-server.html">⚙️ Configurar Servidor</a></p>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/company-api.js"></script>
+    <script>
+        // Atualiza indicador de servidor
+        document.getElementById('serverUrl').textContent = getApiBase();
+
+        // Redireciona se já estiver logado
+        const userToken = sessionStorage.getItem('jwtToken');
+        const companyToken = sessionStorage.getItem('companyToken');
+
+        if (companyToken) {
+            window.location.href = 'company-panel.html';
+        } else if (userToken) {
+            window.location.href = 'painel.html';
+        }
+    </script>
+</body>
+</html>

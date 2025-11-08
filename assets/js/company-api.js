@@ -2,12 +2,12 @@
 
 // Função para obter a URL base configurada
 function getApiBase() {
-    return localStorage.getItem('apiBase') || 'http://localhost:8000';
+    return localStorage.getItem('apiServerUrl') || 'http://localhost:8000';
 }
 
 // Função para definir nova URL base
 function setApiBase(url) {
-    localStorage.setItem('apiBase', url);
+    localStorage.setItem('apiServerUrl', url);
 }
 
 // Função para testar conexão com o servidor

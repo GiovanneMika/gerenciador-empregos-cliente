@@ -122,5 +122,54 @@ function isValidState(state) {
 function formatValidationErrors(details) {
     if (!details || !Array.isArray(details)) return 'Erro de validação';
     
-    return details.map(error => `• ${error.field}: ${error.error}`).join('\n');
+    return details.map(error => {
+        const field = error.field || 'campo';
+        const errorMsg = error.error || 'erro desconhecido';
+        
+        // Traduz alguns campos para português
+        const fieldTranslations = {
+            'name': 'Nome',
+            'business': 'Ramo de Atuação',
+            'username': 'Username',
+            'password': 'Senha',
+            'street': 'Rua',
+            'number': 'Número',
+            'city': 'Cidade',
+            'state': 'Estado',
+            'phone': 'Telefone',
+            'email': 'Email'
+        };
+        
+        // Traduz alguns erros comuns
+        const errorTranslations = {
+            'invalid_format': 'formato inválido',
+            'must_be_positive_int': 'deve ser um número positivo',
+            'required': 'campo obrigatório',
+            'unique': 'já existe no sistema',
+            'min_length': 'muito curto',
+            'max_length': 'muito longo',
+            'invalid_email': 'email inválido',
+            'invalid_state': 'estado inválido'
+        };
+        
+        const translatedField = fieldTranslations[field] || field;
+        const translatedError = errorTranslations[errorMsg] || errorMsg;
+        
+        return `• ${translatedField}: ${translatedError}`;
+    }).join('\n');
+}
+
+// Função para tratar resposta de erro 422 especificamente
+function handleValidationError(data) {
+    let message = `❌ ${data.message || 'Erro de validação'}`;
+    
+    if (data.code) {
+        message += ` (${data.code})`;
+    }
+    
+    if (data.details && Array.isArray(data.details) && data.details.length > 0) {
+        message += `:\n\n${formatValidationErrors(data.details)}`;
+    }
+    
+    return message;
 }

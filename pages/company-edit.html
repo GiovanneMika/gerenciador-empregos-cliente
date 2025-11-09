@@ -164,10 +164,13 @@
                 alert('✅ Dados atualizados com sucesso!');
                 window.location.href = 'company-panel.html';
             } else if (data.status === 422) {
-                const errors = formatValidationErrors(data.details);
-                alert(`❌ Erro de validação:\n${errors}`);
+                alert(handleValidationError(data));
             } else if (data.status === 409) {
                 alert('❌ Nome da empresa já existe. Escolha outro nome.');
+            } else if (data.status === 403) {
+                alert('❌ Acesso negado. Você só pode editar sua própria empresa.');
+            } else if (data.status === 404) {
+                alert('❌ Empresa não encontrada.');
             } else {
                 alert(`❌ Erro ao atualizar: ${data.message || 'Erro desconhecido'}`);
             }

@@ -175,8 +175,7 @@
                     alert(`❌ ${data.message}`);
                 }
             } else if (data.status === 422) {
-                const errors = formatValidationErrors(data.details);
-                alert(`❌ Erro de validação:\n${errors}`);
+                alert(handleValidationError(data));
             } else {
                 alert(`❌ Erro no cadastro: ${data.message || 'Falha desconhecida'}`);
             }

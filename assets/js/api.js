@@ -6,7 +6,7 @@
  */
 function getApiBase() {
     const saved = localStorage.getItem('apiServerUrl');
-    return saved || 'http://localhost:8000';
+    return saved || 'http://localhost:22000';
 }
 
 /**

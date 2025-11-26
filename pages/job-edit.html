@@ -163,12 +163,6 @@
                 <small>Deixe vazio para "A combinar"</small>
             </div>
 
-            <div class="form-group">
-                <label for="contact" class="required">Email de Contato</label>
-                <input type="email" id="contact" name="contact" placeholder="Ex: rh@empresa.com.br" required>
-                <small>Email para os candidatos entrarem em contato</small>
-            </div>
-
             <button type="submit" class="btn-submit">💾 Salvar Alterações</button>
             <button type="button" class="btn-delete" onclick="confirmDelete()">🗑️ Excluir Vaga</button>
             <button type="button" class="btn-back" onclick="goBack()">⬅️ Voltar</button>
@@ -231,7 +225,6 @@
                 document.getElementById('state').value = data.state || '';
                 document.getElementById('city').value = data.city || '';
                 document.getElementById('salary').value = data.salary || '';
-                document.getElementById('contact').value = data.contact || '';
 
                 form.style.display = 'block';
             } else if (data.status === 404) {
@@ -252,8 +245,7 @@
                 area: document.getElementById('area').value,
                 description: document.getElementById('description').value.trim(),
                 state: document.getElementById('state').value,
-                city: document.getElementById('city').value.trim(),
-                contact: document.getElementById('contact').value.trim()
+                city: document.getElementById('city').value.trim()
             };
 
             // Adiciona salário apenas se preenchido
@@ -269,13 +261,13 @@
                 showSuccess('✅ Vaga atualizada com sucesso!');
                 
                 setTimeout(() => {
-                    window.location.href = 'my-jobs.html';
-                }, 1500);
+                    navigateAfterApiCall('my-jobs.html', 500);
+                }, 2000);
             } else if (data.status === 401) {
                 showError('❌ Token inválido. Faça login novamente.');
                 setTimeout(() => {
-                    window.location.href = 'company-login.html';
-                }, 2000);
+                    navigateAfterApiCall('company-login.html', 500);
+                }, 2500);
             } else if (data.status === 403) {
                 showError('❌ Você não tem permissão para editar esta vaga.');
             } else if (data.status === 404) {
@@ -298,7 +290,7 @@
 
             if (data.status === 200) {
                 alert('✅ Vaga excluída com sucesso!');
-                window.location.href = 'my-jobs.html';
+                navigateAfterApiCall('my-jobs.html', 500);
             } else if (data.status === 403) {
                 showError('❌ Você não tem permissão para excluir esta vaga.');
             } else if (data.status === 404) {

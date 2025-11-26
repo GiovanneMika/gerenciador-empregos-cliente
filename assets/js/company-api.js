@@ -173,3 +173,15 @@ function handleValidationError(data) {
     
     return message;
 }
+
+/**
+ * Função auxiliar para redirecionar após uma chamada à API
+ * Aguarda tempo suficiente para a resposta aparecer no Network
+ * @param {string} url - URL para redirecionar
+ * @param {number} delay - Tempo de espera em ms (padrão: 500ms)
+ */
+function navigateAfterApiCall(url, delay = 500) {
+    setTimeout(() => {
+        window.location.href = url;
+    }, delay);
+}

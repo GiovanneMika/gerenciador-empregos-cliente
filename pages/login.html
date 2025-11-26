@@ -59,18 +59,19 @@
 
             const data = await apiCall('/login', 'POST', body);
             responseArea.textContent = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
-            responseArea.textContent = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
             responseArea.style.whiteSpace = 'pre-wrap';
             responseArea.style.wordWrap = 'break-word';
 
             if (data?.token) {
                 const payload = JSON.parse(atob(data.token.split('.')[1]));
                 sessionStorage.setItem('jwtToken', data.token);
-                // payload.sub has format "user:1", extract only the numeric ID
-                const userId = payload.sub.includes(':') ? payload.sub.split(':')[1] : payload.sub;
+                const userId = payload.sub;
                 sessionStorage.setItem('userId', userId);
                 sessionStorage.setItem('username', payload.username);
-                window.location.href = 'painel.html';
+                // Aguarda um pouco para garantir que a resposta aparece no Network
+                setTimeout(() => {
+                    window.location.href = 'painel.html';
+                }, 500);
             } else {
                 alert(`⚠️ Erro no login: ${data.message || 'Credenciais inválidas'}`);
             }

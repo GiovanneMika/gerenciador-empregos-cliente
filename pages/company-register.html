@@ -165,7 +165,7 @@
 
             if (data.status === 201) {
                 alert('✅ Empresa cadastrada com sucesso! Agora você pode fazer login.');
-                window.location.href = 'company-login.html';
+                navigateAfterApiCall('company-login.html', 500);
             } else if (data.status === 409) {
                 if (data.message.includes('name')) {
                     alert('❌ Nome da empresa já existe. Escolha outro nome.');

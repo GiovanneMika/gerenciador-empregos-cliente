@@ -271,23 +271,47 @@
 
             loading.style.display = 'none';
 
-            if (data.status === 200 && data.items && data.items.length > 0) {
-                jobsCount.textContent = `${data.items.length} vaga(s)`;
+            // Debug: log para ver a estrutura da resposta
+            console.log('Resposta da API:', data);
+            console.log('Status:', data.status);
+
+            // Verifica se a resposta contém vagas
+            // Pode vir como data.items, data.data ou diretamente como array
+            let jobs = [];
+            let hasError = false;
+
+            if (data.status === 200) {
+                if (Array.isArray(data)) {
+                    jobs = data.filter(item => item.job_id); // Se for array direto
+                } else if (data.items && Array.isArray(data.items)) {
+                    jobs = data.items;
+                } else if (data.data && Array.isArray(data.data)) {
+                    jobs = data.data;
+                } else if (data.jobs && Array.isArray(data.jobs)) {
+                    jobs = data.jobs;
+                }
+                // Se for um objeto com propriedades de vaga, coloca em um array
+                else if (data.job_id) {
+                    jobs = [data];
+                }
+            } else if (data.status === 401) {
+                hasError = true;
+                alert('❌ Sessão expirada. Faça login novamente.');
+                navigateAfterApiCall('company-login.html', 500);
+            } else if (data.status === 403) {
+                hasError = true;
+                alert('❌ Você não tem permissão para acessar estas vagas.');
+                navigateAfterApiCall('company-panel.html', 500);
+            }
+
+            if (jobs.length > 0) {
+                jobsCount.textContent = `${jobs.length} vaga(s)`;
                 
-                data.items.forEach(job => {
+                jobs.forEach(job => {
                     const card = createJobCardWithActions(job);
                     jobsList.appendChild(card);
                 });
-            } else if (data.status === 404 || (data.items && data.items.length === 0)) {
-                noResults.style.display = 'block';
-                jobsCount.textContent = '0 vagas';
-            } else if (data.status === 401) {
-                alert('❌ Sessão expirada. Faça login novamente.');
-                window.location.href = 'company-login.html';
-            } else if (data.status === 403) {
-                alert('❌ Você não tem permissão para acessar estas vagas.');
-                window.location.href = 'company-panel.html';
-            } else {
+            } else if (!hasError) {
                 noResults.style.display = 'block';
                 jobsCount.textContent = '0 vagas';
             }

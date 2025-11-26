@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Vagas</title>
+    <link rel="stylesheet" href="../assets/css/painel.css">
+    <style>
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn-new-job {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            width: auto;
+            padding: 12px 25px;
+            margin: 0;
+        }
+
+        .btn-new-job:hover {
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
+        }
+
+        /* Cards de Vagas */
+        .jobs-container {
+            margin-top: 20px;
+        }
+
+        .job-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .job-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .job-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .job-area {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .job-company {
+            font-size: 15px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .job-location,
+        .job-salary {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .job-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .job-actions button {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+        }
+
+        .btn-view-applicants {
+            background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+            color: white;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .no-results h3 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .jobs-count {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .filter-section {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-row input,
+        .filter-row select {
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .filter-row input:focus,
+        .filter-row select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .applicants-badge {
+            background: #9f7aea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel" style="max-width: 1000px;">
+        <div class="header-actions">
+            <h2 style="margin: 0;">📋 Minhas Vagas</h2>
+            <button class="btn btn-new-job" onclick="createNewJob()">➕ Nova Vaga</button>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-row">
+                <input type="text" id="filterTitle" placeholder="🔍 Filtrar por título...">
+                <select id="filterArea">
+                    <option value="">Todas as áreas</option>
+                </select>
+                <button class="btn btn-search" onclick="loadJobs()" style="width: auto; margin: 0;">🔄 Atualizar</button>
+            </div>
+        </div>
+
+        <div class="jobs-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">Vagas Cadastradas</h3>
+                <span class="jobs-count" id="jobsCount">0 vagas</span>
+            </div>
+
+            <div id="loading" class="loading">⏳ Carregando suas vagas...</div>
+            <div id="jobsList"></div>
+            <div id="noResults" class="no-results" style="display: none;">
+                <h3>📭 Nenhuma vaga cadastrada</h3>
+                <p>Clique em "Nova Vaga" para começar!</p>
+            </div>
+        </div>
+
+        <button class="btn btn-back" onclick="goBack()">⬅️ Voltar ao Painel</button>
+
+        <h3>📡 Resposta do Servidor</h3>
+        <pre id="responseArea">Aguardando ação...</pre>
+    </div>
+
+    <script src="../assets/js/jobs-api.js"></script>
+    <script>
+        const jobsList = document.getElementById('jobsList');
+        const jobsCount = document.getElementById('jobsCount');
+        const loading = document.getElementById('loading');
+        const noResults = document.getElementById('noResults');
+        const responseArea = document.getElementById('responseArea');
+
+        let companyId = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verifica se é empresa logada
+            if (!isCompanyLogged()) {
+                alert('❌ Apenas empresas podem acessar esta página.');
+                window.location.href = 'company-login.html';
+                return;
+            }
+
+            companyId = sessionStorage.getItem('companyId');
+
+            // Popula select de áreas
+            populateAreasSelect(document.getElementById('filterArea'));
+
+            // Carrega vagas
+            await loadJobs();
+        });
+
+        async function loadJobs() {
+            loading.style.display = 'block';
+            jobsList.innerHTML = '';
+            noResults.style.display = 'none';
+
+            // Monta filtros
+            const filters = {};
+
+            const title = document.getElementById('filterTitle').value.trim();
+            if (title) filters.title = title;
+
+            const area = document.getElementById('filterArea').value;
+            if (area) filters.area = area;
+
+            const data = await getCompanyJobs(companyId, filters);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            loading.style.display = 'none';
+
+            if (data.status === 200 && data.items && data.items.length > 0) {
+                jobsCount.textContent = `${data.items.length} vaga(s)`;
+                
+                data.items.forEach(job => {
+                    const card = createJobCardWithActions(job);
+                    jobsList.appendChild(card);
+                });
+            } else if (data.status === 404 || (data.items && data.items.length === 0)) {
+                noResults.style.display = 'block';
+                jobsCount.textContent = '0 vagas';
+            } else if (data.status === 401) {
+                alert('❌ Sessão expirada. Faça login novamente.');
+                window.location.href = 'company-login.html';
+            } else if (data.status === 403) {
+                alert('❌ Você não tem permissão para acessar estas vagas.');
+                window.location.href = 'company-panel.html';
+            } else {
+                noResults.style.display = 'block';
+                jobsCount.textContent = '0 vagas';
+            }
+        }
+
+        function createJobCardWithActions(job) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            card.dataset.jobId = job.job_id;
+
+            card.innerHTML = `
+                <div class="job-header">
+                    <h3 class="job-title">${job.title}</h3>
+                    <span class="job-area">${job.area}</span>
+                </div>
+                <div class="job-location">📍 ${formatLocation(job.city, job.state)}</div>
+                <div class="job-salary">💰 ${formatSalary(job.salary)}</div>
+                <p class="job-description">${job.description ? job.description.substring(0, 150) + '...' : ''}</p>
+                <div class="job-actions">
+                    <button class="btn-edit" onclick="editJob(${job.job_id})">✏️ Editar</button>
+                    <button class="btn-view-applicants" onclick="viewApplicants(${job.job_id})">👥 Candidatos</button>
+                    <button class="btn-delete" onclick="deleteJobConfirm(${job.job_id})">🗑️ Excluir</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function createNewJob() {
+            window.location.href = 'job-create.html';
+        }
+
+        function editJob(jobId) {
+            window.location.href = `job-edit.html?id=${jobId}`;
+        }
+
+        function viewApplicants(jobId) {
+            window.location.href = `job-applicants.html?id=${jobId}`;
+        }
+
+        async function deleteJobConfirm(jobId) {
+            if (!confirm('⚠️ ATENÇÃO: Tem certeza que deseja excluir esta vaga?\n\nEsta ação é IRREVERSÍVEL!')) {
+                return;
+            }
+
+            const data = await deleteJob(jobId);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data.status === 200) {
+                alert('✅ Vaga excluída com sucesso!');
+                loadJobs();
+            } else if (data.status === 403) {
+                alert('❌ Você não tem permissão para excluir esta vaga.');
+            } else if (data.status === 404) {
+                alert('❌ Vaga não encontrada.');
+                loadJobs();
+            } else {
+                alert('❌ Erro ao excluir: ' + (data.message || 'Erro desconhecido'));
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'company-panel.html';
+        }
+
+        // Filtro por título em tempo real
+        document.getElementById('filterTitle').addEventListener('input', debounce(loadJobs, 500));
+        document.getElementById('filterArea').addEventListener('change', loadJobs);
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+
+</html>

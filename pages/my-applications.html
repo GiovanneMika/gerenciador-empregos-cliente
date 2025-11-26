@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Candidaturas</title>
+    <link rel="stylesheet" href="../assets/css/painel.css">
+    <style>
+        /* Cards de Candidaturas */
+        .applications-container {
+            margin-top: 20px;
+        }
+
+        .job-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .job-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .job-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .job-area {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .job-company {
+            font-size: 15px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .job-location,
+        .job-salary,
+        .job-contact {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .job-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+
+        /* Feedback */
+        .job-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        .job-feedback.received {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border-left-color: #38b2ac;
+        }
+
+        .job-feedback.received strong {
+            color: #234e52;
+        }
+
+        .job-feedback.received p {
+            color: #285e61;
+            margin: 8px 0 0 0;
+            line-height: 1.6;
+        }
+
+        .job-feedback.pending {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-left-color: #f59e0b;
+        }
+
+        .job-feedback.pending em {
+            color: #92400e;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .no-results h3 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .btn-search-jobs {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .applications-count {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-badge.waiting {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.feedback {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .job-actions button {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel" style="max-width: 1000px;">
+        <h2>📝 Minhas Candidaturas</h2>
+
+        <div class="applications-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Vagas que você se candidatou</h3>
+                <span class="applications-count" id="applicationsCount">0 candidaturas</span>
+            </div>
+
+            <div id="loading" class="loading">⏳ Carregando suas candidaturas...</div>
+            <div id="applicationsList"></div>
+            <div id="noResults" class="no-results" style="display: none;">
+                <h3>📭 Nenhuma candidatura encontrada</h3>
+                <p>Você ainda não se candidatou a nenhuma vaga.</p>
+                <button class="btn btn-search-jobs" onclick="searchJobs()">🔍 Buscar Vagas</button>
+            </div>
+        </div>
+
+        <button class="btn btn-search-jobs" onclick="searchJobs()">🔍 Buscar Mais Vagas</button>
+        <button class="btn btn-back" onclick="goBack()">⬅️ Voltar ao Painel</button>
+
+        <h3>📡 Resposta do Servidor</h3>
+        <pre id="responseArea">Aguardando ação...</pre>
+    </div>
+
+    <script src="../assets/js/jobs-api.js"></script>
+    <script>
+        const applicationsList = document.getElementById('applicationsList');
+        const applicationsCount = document.getElementById('applicationsCount');
+        const loading = document.getElementById('loading');
+        const noResults = document.getElementById('noResults');
+        const responseArea = document.getElementById('responseArea');
+
+        let userId = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verifica se é usuário logado
+            if (!isUserLogged()) {
+                alert('❌ Apenas usuários podem acessar esta página.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            userId = sessionStorage.getItem('userId');
+
+            // Carrega candidaturas
+            await loadApplications();
+        });
+
+        async function loadApplications() {
+            loading.style.display = 'block';
+            applicationsList.innerHTML = '';
+            noResults.style.display = 'none';
+
+            const data = await getUserApplications(userId);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            loading.style.display = 'none';
+
+            if (data.status === 200 && data.items && data.items.length > 0) {
+                applicationsCount.textContent = `${data.items.length} candidatura(s)`;
+                
+                data.items.forEach(job => {
+                    const card = createApplicationCard(job);
+                    applicationsList.appendChild(card);
+                });
+            } else if (data.status === 404 || (data.items && data.items.length === 0)) {
+                noResults.style.display = 'block';
+                applicationsCount.textContent = '0 candidaturas';
+            } else if (data.status === 401) {
+                alert('❌ Sessão expirada. Faça login novamente.');
+                window.location.href = 'login.html';
+            } else if (data.status === 403) {
+                alert('❌ Você não tem permissão para acessar estas candidaturas.');
+                window.location.href = 'painel.html';
+            } else {
+                noResults.style.display = 'block';
+                applicationsCount.textContent = '0 candidaturas';
+            }
+        }
+
+        function createApplicationCard(job) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+
+            const hasFeedback = job.feedback !== null && job.feedback !== undefined;
+            const statusBadge = hasFeedback 
+                ? '<span class="status-badge feedback">✅ Resposta recebida</span>'
+                : '<span class="status-badge waiting">⏳ Aguardando</span>';
+
+            let feedbackHtml = '';
+            if (hasFeedback) {
+                feedbackHtml = `
+                    <div class="job-feedback received">
+                        <strong>📬 Feedback da Empresa:</strong>
+                        <p>${job.feedback}</p>
+                    </div>
+                `;
+            } else {
+                feedbackHtml = `
+                    <div class="job-feedback pending">
+                        <em>⏳ Aguardando feedback da empresa...</em>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="job-header">
+                    <div>
+                        <h3 class="job-title">${job.title} ${statusBadge}</h3>
+                    </div>
+                    <span class="job-area">${job.area}</span>
+                </div>
+                <div class="job-company">🏢 ${job.company}</div>
+                <div class="job-location">📍 ${formatLocation(job.city, job.state)}</div>
+                <div class="job-salary">💰 ${formatSalary(job.salary)}</div>
+                <div class="job-contact">📧 ${job.contact || 'Contato não informado'}</div>
+                <p class="job-description">${job.description ? job.description.substring(0, 200) + '...' : ''}</p>
+                ${feedbackHtml}
+                <div class="job-actions">
+                    <button class="btn-view" onclick="viewJobDetail(${job.job_id})">👁️ Ver Vaga Completa</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function viewJobDetail(jobId) {
+            window.location.href = `job-detail.html?id=${jobId}`;
+        }
+
+        function searchJobs() {
+            window.location.href = 'job-search.html';
+        }
+
+        function goBack() {
+            window.location.href = 'painel.html';
+        }
+    </script>
+</body>
+
+</html>

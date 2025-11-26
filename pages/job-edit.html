@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Vaga</title>
+    <link rel="stylesheet" href="../assets/css/painel.css">
+    <style>
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .required::after {
+            content: ' *';
+            color: var(--danger-color);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            box-shadow: 0 8px 20px rgba(66, 153, 225, 0.4);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            color: white;
+        }
+
+        .error-message {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #c53030;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #276749;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel">
+        <h2>✏️ Editar Vaga</h2>
+
+        <div id="loading" class="loading">⏳ Carregando dados da vaga...</div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="jobForm" style="display: none;">
+            <input type="hidden" id="jobId">
+
+            <div class="form-group">
+                <label for="title" class="required">Título da Vaga</label>
+                <input type="text" id="title" name="title" placeholder="Ex: Desenvolvedor Full Stack" 
+                       minlength="3" maxlength="150" required>
+                <small>Entre 3 e 150 caracteres</small>
+            </div>
+
+            <div class="form-group">
+                <label for="area" class="required">Área de Atuação</label>
+                <select id="area" name="area" required>
+                    <option value="">Selecione a área...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="required">Descrição da Vaga</label>
+                <textarea id="description" name="description" 
+                          placeholder="Descreva as responsabilidades, requisitos, benefícios..." 
+                          minlength="10" maxlength="5000" required></textarea>
+                <small>Entre 10 e 5000 caracteres</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="state" class="required">Estado</label>
+                    <select id="state" name="state" required>
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="city" class="required">Cidade</label>
+                    <input type="text" id="city" name="city" placeholder="Ex: São Paulo" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="salary">Salário (opcional)</label>
+                <input type="number" id="salary" name="salary" placeholder="Ex: 3500.00" 
+                       min="0" step="0.01">
+                <small>Deixe vazio para "A combinar"</small>
+            </div>
+
+            <div class="form-group">
+                <label for="contact" class="required">Email de Contato</label>
+                <input type="email" id="contact" name="contact" placeholder="Ex: rh@empresa.com.br" required>
+                <small>Email para os candidatos entrarem em contato</small>
+            </div>
+
+            <button type="submit" class="btn-submit">💾 Salvar Alterações</button>
+            <button type="button" class="btn-delete" onclick="confirmDelete()">🗑️ Excluir Vaga</button>
+            <button type="button" class="btn-back" onclick="goBack()">⬅️ Voltar</button>
+        </form>
+
+        <h3>📡 Resposta do Servidor</h3>
+        <pre id="responseArea">Aguardando ação...</pre>
+    </div>
+
+    <script src="../assets/js/jobs-api.js"></script>
+    <script>
+        const form = document.getElementById('jobForm');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const responseArea = document.getElementById('responseArea');
+
+        let currentJobId = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verifica se é empresa logada
+            if (!isCompanyLogged()) {
+                alert('❌ Apenas empresas podem editar vagas.');
+                window.location.href = 'company-login.html';
+                return;
+            }
+
+            // Obtém ID da vaga da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            currentJobId = urlParams.get('id');
+
+            if (!currentJobId) {
+                showError('❌ ID da vaga não informado.');
+                loading.style.display = 'none';
+                return;
+            }
+
+            document.getElementById('jobId').value = currentJobId;
+
+            // Popula selects
+            populateAreasSelect(document.getElementById('area'));
+            populateStatesSelect(document.getElementById('state'));
+
+            // Carrega dados da vaga
+            await loadJobData();
+        });
+
+        async function loadJobData() {
+            const data = await getJob(currentJobId);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            loading.style.display = 'none';
+
+            if (data.status === 200) {
+                // Preenche formulário
+                document.getElementById('title').value = data.title || '';
+                document.getElementById('area').value = data.area || '';
+                document.getElementById('description').value = data.description || '';
+                document.getElementById('state').value = data.state || '';
+                document.getElementById('city').value = data.city || '';
+                document.getElementById('salary').value = data.salary || '';
+                document.getElementById('contact').value = data.contact || '';
+
+                form.style.display = 'block';
+            } else if (data.status === 404) {
+                showError('❌ Vaga não encontrada.');
+            } else {
+                showError('❌ Erro ao carregar vaga: ' + (data.message || 'Erro desconhecido'));
+            }
+        }
+
+        // Submit do formulário
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            hideMessages();
+
+            const jobData = {
+                title: document.getElementById('title').value.trim(),
+                area: document.getElementById('area').value,
+                description: document.getElementById('description').value.trim(),
+                state: document.getElementById('state').value,
+                city: document.getElementById('city').value.trim(),
+                contact: document.getElementById('contact').value.trim()
+            };
+
+            // Adiciona salário apenas se preenchido
+            const salary = document.getElementById('salary').value;
+            if (salary && parseFloat(salary) > 0) {
+                jobData.salary = parseFloat(salary);
+            }
+
+            const data = await updateJob(currentJobId, jobData);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data.status === 200) {
+                showSuccess('✅ Vaga atualizada com sucesso!');
+                
+                setTimeout(() => {
+                    window.location.href = 'my-jobs.html';
+                }, 1500);
+            } else if (data.status === 401) {
+                showError('❌ Token inválido. Faça login novamente.');
+                setTimeout(() => {
+                    window.location.href = 'company-login.html';
+                }, 2000);
+            } else if (data.status === 403) {
+                showError('❌ Você não tem permissão para editar esta vaga.');
+            } else if (data.status === 404) {
+                showError('❌ Vaga não encontrada.');
+            } else if (data.status === 422) {
+                const errorText = formatJobValidationErrors(data.details);
+                showError('❌ Erro de validação:\n' + errorText);
+            } else {
+                showError('❌ Erro: ' + (data.message || 'Erro desconhecido'));
+            }
+        });
+
+        async function confirmDelete() {
+            if (!confirm('⚠️ ATENÇÃO: Tem certeza que deseja excluir esta vaga?\n\nEsta ação é IRREVERSÍVEL!')) {
+                return;
+            }
+
+            const data = await deleteJob(currentJobId);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data.status === 200) {
+                alert('✅ Vaga excluída com sucesso!');
+                window.location.href = 'my-jobs.html';
+            } else if (data.status === 403) {
+                showError('❌ Você não tem permissão para excluir esta vaga.');
+            } else if (data.status === 404) {
+                showError('❌ Vaga não encontrada.');
+            } else {
+                showError('❌ Erro ao excluir: ' + (data.message || 'Erro desconhecido'));
+            }
+        }
+
+        function showError(message) {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = message;
+            errorMessage.style.whiteSpace = 'pre-line';
+        }
+
+        function showSuccess(message) {
+            successMessage.style.display = 'block';
+            successMessage.textContent = message;
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function goBack() {
+            window.location.href = 'my-jobs.html';
+        }
+    </script>
+</body>
+
+</html>

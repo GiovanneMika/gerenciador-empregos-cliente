@@ -14,6 +14,13 @@
 
         <hr>
 
+        <h3>💼 Vagas de Emprego</h3>
+        <button id="searchJobsBtn" class="primary">🔍 Buscar Vagas</button>
+        <button id="myApplicationsBtn" class="info">📝 Minhas Candidaturas</button>
+
+        <hr>
+
+        <h3>⚙️ Configurações</h3>
         <button id="editBtn">✏️ Editar Dados</button>
         <button id="deleteBtn" class="danger">🗑️ Deletar Conta</button>
         <button id="logoutBtn" class="secondary">🚪 Logout</button>
@@ -23,6 +30,7 @@
     </div>
 
     <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/jobs-api.js"></script>
     <script>
         const userInfoDiv = document.getElementById('userInfo');
         const responseArea = document.getElementById('responseArea');
@@ -58,6 +66,14 @@
 
         document.getElementById('editBtn').addEventListener('click', () => {
             window.location.href = 'editar.html';
+        });
+
+        document.getElementById('searchJobsBtn').addEventListener('click', () => {
+            window.location.href = 'job-search.html';
+        });
+
+        document.getElementById('myApplicationsBtn').addEventListener('click', () => {
+            window.location.href = 'my-applications.html';
         });
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {

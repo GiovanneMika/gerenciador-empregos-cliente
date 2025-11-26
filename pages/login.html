@@ -66,7 +66,9 @@
             if (data?.token) {
                 const payload = JSON.parse(atob(data.token.split('.')[1]));
                 sessionStorage.setItem('jwtToken', data.token);
-                sessionStorage.setItem('userId', payload.sub);
+                // payload.sub has format "user:1", extract only the numeric ID
+                const userId = payload.sub.includes(':') ? payload.sub.split(':')[1] : payload.sub;
+                sessionStorage.setItem('userId', userId);
                 sessionStorage.setItem('username', payload.username);
                 window.location.href = 'painel.html';
             } else {

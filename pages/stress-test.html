@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>🔥 Stress Test - Backend Performance</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .stress-panel {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .control-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(238, 9, 121, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .log-section {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 3px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff0000; }
+        .log-warning { color: #ffff00; }
+        .log-info { color: #00bfff; }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+
+        .warning-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .latency-chart {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            height: 200px;
+            position: relative;
+        }
+
+        .latency-chart canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .performance-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .perf-excellent { background: #38ef7d; color: white; }
+        .perf-good { background: #11998e; color: white; }
+        .perf-warning { background: #ffc107; color: black; }
+        .perf-bad { background: #ff6a00; color: white; }
+        .perf-critical { background: #ee0979; color: white; }
+    </style>
+</head>
+<body>
+    <div class="stress-panel">
+        <h1 style="color: white; text-align: center;">🔥 Backend Stress Test</h1>
+        
+        <div class="warning-box">
+            <h3>⚠️ Uso Responsável</h3>
+            <ul>
+                <li>Use apenas em ambientes de desenvolvimento/teste</li>
+                <li>Avise a equipe antes de executar</li>
+                <li>Monitore o servidor durante os testes</li>
+                <li>Não use em produção sem autorização</li>
+            </ul>
+        </div>
+
+        <div class="control-section">
+            <h2>⚙️ Configurações do Teste</h2>
+            
+            <div class="control-group">
+                <label for="testType">Tipo de Teste:</label>
+                <select id="testType" onchange="updateTestDescription()">
+                    <option value="mixed">🎲 Misto (Variado)</option>
+                    <option value="register_users">👥 Cadastro de Usuários (POST pesado)</option>
+                    <option value="register_companies">🏢 Cadastro de Empresas (POST pesado)</option>
+                    <option value="login_attempts">🔐 Login com Validação (POST médio)</option>
+                    <option value="heavy_validation">⚠️ Validação Pesada (POST com erros)</option>
+                    <option value="database_intensive">💾 Operações de Banco Intensivas</option>
+                    <option value="full_cycle">🔄 Ciclo Completo (Cadastro + Login + Operações)</option>
+                </select>
+            </div>
+
+            <div id="testDescription" style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 13px; color: #555;">
+                <strong>📝 O que este teste faz:</strong><br>
+                <span id="descText">Alterna aleatoriamente entre diferentes tipos de requisições.</span>
+            </div>
+
+            <div class="control-group">
+                <label for="requestCount">Quantidade de Requisições:</label>
+                <input type="number" id="requestCount" value="100" min="1" max="10000">
+            </div>
+
+            <div class="control-group">
+                <label for="concurrency">Requisições Simultâneas:</label>
+                <input type="number" id="concurrency" value="5" min="1" max="50">
+            </div>
+
+            <div class="control-group">
+                <label for="delay">Delay entre lotes (ms):</label>
+                <input type="number" id="delay" value="100" min="0" max="5000">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-start" id="startBtn">▶️ Iniciar Teste</button>
+                <button class="btn btn-stop" id="stopBtn" disabled>⏹️ Parar Teste</button>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Enviado</div>
+                <div class="stat-value" id="totalSent">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Sucessos</div>
+                <div class="stat-value" id="successCount" style="color: #38ef7d;">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Erros</div>
+                <div class="stat-value" id="errorCount" style="color: #ff6a00;">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tempo Médio (ms)</div>
+                <div class="stat-value" id="avgTime">0</div>
+                <span id="perfIndicator" class="performance-indicator perf-excellent">Excelente</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Min / Max (ms)</div>
+                <div class="stat-value" id="minMaxTime" style="font-size: 24px;">- / -</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Req/s</div>
+                <div class="stat-value" id="reqPerSec">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tempo Total</div>
+                <div class="stat-value" id="totalTime" style="font-size: 24px;">0s</div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>� Latência em Tempo Real</h3>
+            <div class="latency-chart">
+                <canvas id="latencyChart"></canvas>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>�📊 Log de Requisições</h3>
+            <button onclick="clearLog()" style="padding: 8px 15px; margin-bottom: 10px;">🗑️ Limpar Log</button>
+            <div class="log-section" id="logArea">
+                <div class="log-info">Aguardando início do teste...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/company-api.js"></script>
+    <script>
+        // Função auxiliar para fazer request com token customizado
+        async function apiCallWithToken(endpoint, method = 'GET', body = null, customToken = null) {
+            const API_BASE = getApiBase();
+            const token = customToken || sessionStorage.getItem('jwtToken');
+            const headers = { 'Content-Type': 'application/json' };
+
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+
+            try {
+                const response = await fetch(API_BASE + endpoint, options);
+                let data = await response.json().catch(() => ({}));
+                data.status = response.status;
+                return data;
+            } catch (err) {
+                return { message: 'Falha na conexão', status: 0 };
+            }
+        }
+
+        let isRunning = false;
+        let stats = {
+            totalSent: 0,
+            successCount: 0,
+            errorCount: 0,
+            times: [],
+            startTime: null,
+            latencyHistory: [] // Guarda últimas 50 latências
+        };
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const logArea = document.getElementById('logArea');
+        
+        // Configuração do gráfico de latência
+        const canvas = document.getElementById('latencyChart');
+        const ctx = canvas.getContext('2d');
+        const MAX_POINTS = 50;
+
+        function updateTestDescription() {
+            const testType = document.getElementById('testType').value;
+            const descriptions = {
+                'mixed': 'Alterna aleatoriamente entre diferentes tipos de requisições. Ótimo para teste geral.',
+                'register_users': '✅ <strong>PESADO</strong> - Cria usuários com validação completa de CPF, username único, senha hash. Testa INSERT no banco + validações.',
+                'register_companies': '✅ <strong>PESADO</strong> - Cria empresas com validação de estado, email, telefone, campos obrigatórios. Testa INSERT + múltiplas validações.',
+                'login_attempts': '✅ <strong>MÉDIO</strong> - Faz login com credenciais reais (se houver) forçando SELECT + verificação de hash de senha.',
+                'heavy_validation': '✅ <strong>PESADO</strong> - Envia dados inválidos propositalmente para forçar TODAS as regras de validação do backend (required, format, min_length, etc).',
+                'database_intensive': '✅ <strong>MUITO PESADO</strong> - Alterna entre INSERTs e SELECTs com validações. Testa intensamente o banco de dados.',
+                'full_cycle': '✅ <strong>EXTREMO</strong> - Cadastro + Login + GET autenticado. Cada requisição faz 3 operações completas no servidor!'
+            };
+            document.getElementById('descText').innerHTML = descriptions[testType] || 'Teste selecionado.';
+        }
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logArea.appendChild(entry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function clearLog() {
+            logArea.innerHTML = '<div class="log-info">Log limpo.</div>';
+        }
+
+        function updatePerformanceIndicator(avgTime) {
+            const indicator = document.getElementById('perfIndicator');
+            
+            if (avgTime < 100) {
+                indicator.className = 'performance-indicator perf-excellent';
+                indicator.textContent = '⚡ Excelente';
+            } else if (avgTime < 300) {
+                indicator.className = 'performance-indicator perf-good';
+                indicator.textContent = '✓ Bom';
+            } else if (avgTime < 500) {
+                indicator.className = 'performance-indicator perf-warning';
+                indicator.textContent = '⚠ Aceitável';
+            } else if (avgTime < 1000) {
+                indicator.className = 'performance-indicator perf-bad';
+                indicator.textContent = '🔻 Lento';
+            } else {
+                indicator.className = 'performance-indicator perf-critical';
+                indicator.textContent = '🚨 Crítico';
+            }
+        }
+
+        function drawLatencyChart() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Limpa canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            if (stats.latencyHistory.length < 2) return;
+            
+            // Encontra min/max para escala
+            const maxLatency = Math.max(...stats.latencyHistory, 100);
+            const minLatency = 0;
+            
+            // Desenha grid de fundo
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = (height / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+                
+                // Labels
+                const value = Math.round(maxLatency - (maxLatency / 5) * i);
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Arial';
+                ctx.fillText(value + 'ms', 5, y - 2);
+            }
+            
+            // Desenha linha de latência
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const step = width / (MAX_POINTS - 1);
+            const startIndex = Math.max(0, stats.latencyHistory.length - MAX_POINTS);
+            
+            stats.latencyHistory.slice(startIndex).forEach((latency, index) => {
+                const x = index * step;
+                const y = height - ((latency - minLatency) / (maxLatency - minLatency)) * height;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Desenha pontos
+            ctx.fillStyle = '#667eea';
+            stats.latencyHistory.slice(startIndex).forEach((latency, index) => {
+                const x = index * step;
+                const y = height - ((latency - minLatency) / (maxLatency - minLatency)) * height;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Linha de referência (média)
+            const avgLatency = stats.times.length > 0 
+                ? stats.times.reduce((a, b) => a + b, 0) / stats.times.length 
+                : 0;
+            const avgY = height - ((avgLatency - minLatency) / (maxLatency - minLatency)) * height;
+            
+            ctx.strokeStyle = '#ff6a00';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, avgY);
+            ctx.lineTo(width, avgY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Label da média
+            ctx.fillStyle = '#ff6a00';
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText('Média: ' + Math.round(avgLatency) + 'ms', width - 120, avgY - 5);
+        }
+
+        function updateStats() {
+            document.getElementById('totalSent').textContent = stats.totalSent;
+            document.getElementById('successCount').textContent = stats.successCount;
+            document.getElementById('errorCount').textContent = stats.errorCount;
+            
+            const avgTime = stats.times.length > 0 
+                ? Math.round(stats.times.reduce((a, b) => a + b, 0) / stats.times.length)
+                : 0;
+            document.getElementById('avgTime').textContent = avgTime;
+            
+            // Min/Max
+            if (stats.times.length > 0) {
+                const minTime = Math.min(...stats.times);
+                const maxTime = Math.max(...stats.times);
+                document.getElementById('minMaxTime').textContent = `${minTime} / ${maxTime}`;
+            }
+            
+            updatePerformanceIndicator(avgTime);
+            drawLatencyChart();
+
+            if (stats.startTime) {
+                const elapsed = (Date.now() - stats.startTime) / 1000;
+                document.getElementById('totalTime').textContent = elapsed.toFixed(1) + 's';
+                const reqPerSec = stats.totalSent > 0 ? (stats.totalSent / elapsed).toFixed(2) : 0;
+                document.getElementById('reqPerSec').textContent = reqPerSec;
+            }
+        }
+
+        function updateProgress(current, total) {
+            const percent = Math.round((current / total) * 100);
+            const fill = document.getElementById('progressFill');
+            fill.style.width = percent + '%';
+            fill.textContent = percent + '%';
+        }
+
+        function generateRandomUser() {
+            // Gera ID alfanumérico sem caracteres especiais (min 3, max 20)
+            const id = Math.random().toString(36).substr(2, 6).replace(/[^a-z0-9]/g, '') + 
+                       Math.random().toString(36).substr(2, 4).replace(/[^a-z0-9]/g, '');
+            const timestamp = Date.now().toString().slice(-4);
+            
+            // Username: 3-20 caracteres, sem espaços, sem caracteres especiais
+            const username = `user${id.substr(0, 10)}${timestamp}`.substr(0, 20);
+            
+            // Password: 3-20 caracteres, sem espaços, sem caracteres especiais
+            const password = `pass${id.substr(0, 12)}`.substr(0, 20);
+            
+            return {
+                name: `User${timestamp}Test`,
+                username: username,
+                password: password,
+                cpf: Math.floor(Math.random() * 100000000000).toString().padStart(11, '0'),
+                // Campos opcionais
+                email: `user${id}@test.com`,
+                phone: `42${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}`,
+                experience: `${Math.floor(Math.random() * 5) + 1} years of experience in software development`,
+                education: `Bachelor in Computer Science`
+            };
+        }
+
+        function generateRandomCompany() {
+            // Gera ID alfanumérico sem caracteres especiais
+            const id = Math.random().toString(36).substr(2, 6).replace(/[^a-z0-9]/g, '') + 
+                       Math.random().toString(36).substr(2, 4).replace(/[^a-z0-9]/g, '');
+            const timestamp = Date.now().toString().slice(-4);
+            const states = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+            
+            // Username: 3-20 caracteres, sem espaços, sem caracteres especiais
+            const username = `comp${id.substr(0, 10)}${timestamp}`.substr(0, 20);
+            
+            // Password: 3-20 caracteres, sem espaços, sem caracteres especiais
+            const password = `pass${id.substr(0, 12)}`.substr(0, 20);
+            
+            return {
+                name: `Company${timestamp}Test`, // 4-150 caracteres
+                business: `Business${id}`.substr(0, 20), // 4-150
+                username: username,
+                password: password,
+                email: `comp${id}${timestamp}@test.com`, // 10-150, email válido
+                phone: `42${Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')}`, // 10-14 dígitos
+                street: `Street${id}Test`, // 3-150
+                number: Math.floor(Math.random() * 99999).toString(), // 1-8, inteiro positivo
+                city: `City${timestamp}`, // 3-150
+                state: states[Math.floor(Math.random() * states.length)] // Estado válido
+            };
+        }
+
+        // Cache para armazenar tokens de usuários criados
+        let createdUsers = [];
+        let createdCompanies = [];
+
+        async function makeRequest(type) {
+            const startTime = Date.now();
+            
+            try {
+                let result;
+                
+                switch(type) {
+                    case 'register_users':
+                        // Força validação completa com dados válidos
+                        const userData = generateRandomUser();
+                        result = await apiCall('/users', 'POST', userData);
+                        if (result.status === 201) {
+                            createdUsers.push(userData);
+                        }
+                        break;
+                    
+                    case 'register_companies':
+                        // Força validação completa com dados válidos
+                        const companyData = generateRandomCompany();
+                        result = await companyApiCall('/companies', 'POST', companyData);
+                        if (result.status === 201) {
+                            createdCompanies.push(companyData);
+                        }
+                        break;
+                    
+                    case 'login_attempts':
+                        // Tenta login com usuários EXISTENTES (força verificação de senha)
+                        if (createdUsers.length > 0 || createdCompanies.length > 0) {
+                            const useUser = Math.random() > 0.5 && createdUsers.length > 0;
+                            const credentials = useUser 
+                                ? createdUsers[Math.floor(Math.random() * createdUsers.length)]
+                                : createdCompanies[Math.floor(Math.random() * createdCompanies.length)];
+                            
+                            result = await apiCall('/login', 'POST', {
+                                username: credentials.username,
+                                password: credentials.password
+                            });
+                        } else {
+                            // Fallback: força validação com usuário inexistente (sem caracteres especiais)
+                            const randomId = Math.random().toString(36).substr(2, 9).replace(/[^a-z0-9]/g, '');
+                            result = await apiCall('/login', 'POST', {
+                                username: `user${randomId}`,
+                                password: 'test123456'
+                            });
+                        }
+                        break;
+                    
+                    case 'heavy_validation':
+                        // Envia dados PROPOSITALMENTE inválidos para forçar validação completa
+                        const invalidData = {
+                            name: '', // vazio - vai validar required
+                            username: 'ab', // muito curto - vai validar min_length
+                            password: '123', // muito curto - vai validar min_length
+                            cpf: 'invalid', // formato inválido - vai validar formato
+                            email: 'not-an-email', // email inválido
+                            phone: 'abc', // phone inválido
+                            state: 'XX' // estado inválido
+                        };
+                        result = Math.random() > 0.5
+                            ? await apiCall('/users', 'POST', invalidData)
+                            : await companyApiCall('/companies', 'POST', invalidData);
+                        break;
+                    
+                    case 'database_intensive':
+                        // Alterna entre cadastros (INSERT) e logins (SELECT + verificação)
+                        const operations = ['register_users', 'register_companies', 'login_attempts'];
+                        return await makeRequest(operations[Math.floor(Math.random() * operations.length)]);
+                    
+                    case 'full_cycle':
+                        // 1. Cadastra
+                        const newUser = generateRandomUser();
+                        const registerResult = await apiCall('/users', 'POST', newUser);
+                        
+                        if (registerResult.status === 201) {
+                            // 2. Faz login
+                            const loginResult = await apiCall('/login', 'POST', {
+                                username: newUser.username,
+                                password: newUser.password
+                            });
+                            
+                            if (loginResult.token) {
+                                // 3. Busca dados (com token válido) - FORÇA operação autenticada
+                                const userId = parseJwt(loginResult.token)?.sub;
+                                if (userId) {
+                                    result = await apiCallWithToken(`/users/${userId}`, 'GET', null, loginResult.token);
+                                } else {
+                                    result = loginResult;
+                                }
+                            } else {
+                                result = loginResult;
+                            }
+                        } else {
+                            result = registerResult;
+                        }
+                        break;
+                    
+                    default: // mixed
+                        const types = ['register_users', 'register_companies', 'login_attempts', 'heavy_validation'];
+                        return await makeRequest(types[Math.floor(Math.random() * types.length)]);
+                }
+                
+                const elapsed = Date.now() - startTime;
+                stats.times.push(elapsed);
+                stats.latencyHistory.push(elapsed);
+                
+                // Mantém apenas as últimas 50 latências
+                if (stats.latencyHistory.length > MAX_POINTS) {
+                    stats.latencyHistory.shift();
+                }
+                
+                stats.totalSent++;
+                
+                if (result.status >= 200 && result.status < 300) {
+                    stats.successCount++;
+                    log(`✓ ${type} - ${result.status} - ${elapsed}ms`, 'success');
+                } else if (result.status === 409 || result.status === 422) {
+                    // Erros esperados em stress test
+                    stats.successCount++;
+                    log(`⚠ ${type} - ${result.status} (esperado) - ${elapsed}ms`, 'warning');
+                } else {
+                    stats.errorCount++;
+                    log(`✗ ${type} - ${result.status || 'ERRO'} - ${elapsed}ms`, 'error');
+                }
+                
+            } catch (error) {
+                const elapsed = Date.now() - startTime;
+                stats.totalSent++;
+                stats.errorCount++;
+                log(`✗ ${type} - EXCEPTION: ${error.message} - ${elapsed}ms`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        async function runStressTest() {
+            const testType = document.getElementById('testType').value;
+            const requestCount = parseInt(document.getElementById('requestCount').value);
+            const concurrency = parseInt(document.getElementById('concurrency').value);
+            const delay = parseInt(document.getElementById('delay').value);
+
+            isRunning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            stats = {
+                totalSent: 0,
+                successCount: 0,
+                errorCount: 0,
+                times: [],
+                startTime: Date.now(),
+                latencyHistory: [] // Inicializa o array de latências
+            };
+
+            clearLog();
+            log(`🚀 Iniciando teste: ${testType}`, 'info');
+            log(`📊 Requisições: ${requestCount} | Concorrência: ${concurrency} | Delay: ${delay}ms`, 'info');
+
+            for (let i = 0; i < requestCount && isRunning; i += concurrency) {
+                const batch = [];
+                const batchSize = Math.min(concurrency, requestCount - i);
+                
+                for (let j = 0; j < batchSize; j++) {
+                    batch.push(makeRequest(testType));
+                }
+                
+                await Promise.all(batch);
+                updateProgress(i + batchSize, requestCount);
+                
+                if (delay > 0 && i + concurrency < requestCount) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+
+            if (isRunning) {
+                log(`✅ Teste concluído!`, 'success');
+                log(`📈 Resultados: ${stats.successCount} sucessos, ${stats.errorCount} erros`, 'info');
+            } else {
+                log(`⏹️ Teste interrompido pelo usuário`, 'warning');
+            }
+
+            isRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                runStressTest();
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            isRunning = false;
+            log(`⏸️ Parando teste...`, 'warning');
+        });
+
+        // Inicializa canvas com tamanho correto
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth - 40;
+            canvas.height = container.offsetHeight - 40;
+            drawLatencyChart();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Inicializa descrição ao carregar a página
+        updateTestDescription();
+    </script>
+</body>
+</html>

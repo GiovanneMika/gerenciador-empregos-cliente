@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidatos da Vaga</title>
+    <link rel="stylesheet" href="../assets/css/painel.css">
+    <style>
+        .job-info {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid var(--border-color);
+        }
+
+        .job-info h3 {
+            margin: 0 0 10px 0;
+            color: var(--text-primary);
+        }
+
+        .job-info-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Cards de Candidatos */
+        .applicants-container {
+            margin-top: 20px;
+        }
+
+        .applicant-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .applicant-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .applicant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .applicant-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .applicant-contact {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .applicant-contact span {
+            margin-right: 15px;
+        }
+
+        .applicant-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 10px;
+        }
+
+        .applicant-section h4 {
+            margin: 0 0 8px 0;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .applicant-section p {
+            margin: 0;
+            color: var(--text-primary);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Feedback existente */
+        .existing-feedback {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border: 2px solid #38b2ac;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .existing-feedback h4 {
+            color: #234e52;
+            margin: 0 0 8px 0;
+        }
+
+        .existing-feedback p {
+            color: #285e61;
+            margin: 0;
+        }
+
+        /* Formulário de feedback */
+        .feedback-form {
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+        }
+
+        .feedback-form h4 {
+            color: #92400e;
+            margin: 0 0 10px 0;
+        }
+
+        .feedback-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #fcd34d;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 80px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .feedback-form textarea:focus {
+            border-color: #f59e0b;
+            outline: none;
+        }
+
+        .feedback-form button {
+            margin-top: 10px;
+            width: auto;
+            padding: 10px 20px;
+        }
+
+        .btn-send-feedback {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .applicant-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .applicant-actions button {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .btn-toggle-feedback {
+            background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .no-results h3 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .applicants-count {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .error-message {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #c53030;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #276749;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel" style="max-width: 1000px;">
+        <h2>👥 Candidatos da Vaga</h2>
+
+        <div id="jobInfo" class="job-info" style="display: none;">
+            <h3 id="jobTitle">Carregando...</h3>
+            <div class="job-info-details">
+                <span id="jobArea">📂 Área</span>
+                <span id="jobLocation">📍 Localização</span>
+                <span id="jobSalary">💰 Salário</span>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <div class="applicants-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Candidatos</h3>
+                <span class="applicants-count" id="applicantsCount">0 candidatos</span>
+            </div>
+
+            <div id="loading" class="loading">⏳ Carregando candidatos...</div>
+            <div id="applicantsList"></div>
+            <div id="noResults" class="no-results" style="display: none;">
+                <h3>📭 Nenhum candidato ainda</h3>
+                <p>Aguarde candidaturas para esta vaga.</p>
+            </div>
+        </div>
+
+        <button class="btn btn-back" onclick="goBack()">⬅️ Voltar às Minhas Vagas</button>
+
+        <h3>📡 Resposta do Servidor</h3>
+        <pre id="responseArea">Aguardando ação...</pre>
+    </div>
+
+    <script src="../assets/js/jobs-api.js"></script>
+    <script>
+        const jobInfo = document.getElementById('jobInfo');
+        const applicantsList = document.getElementById('applicantsList');
+        const applicantsCount = document.getElementById('applicantsCount');
+        const loading = document.getElementById('loading');
+        const noResults = document.getElementById('noResults');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const responseArea = document.getElementById('responseArea');
+
+        let currentJobId = null;
+        let companyId = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verifica se é empresa logada
+            if (!isCompanyLogged()) {
+                alert('❌ Apenas empresas podem acessar esta página.');
+                window.location.href = 'company-login.html';
+                return;
+            }
+
+            companyId = sessionStorage.getItem('companyId');
+
+            // Obtém ID da vaga da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            currentJobId = urlParams.get('id');
+
+            if (!currentJobId) {
+                showError('❌ ID da vaga não informado.');
+                loading.style.display = 'none';
+                return;
+            }
+
+            // Carrega informações da vaga
+            await loadJobInfo();
+
+            // Carrega candidatos
+            await loadApplicants();
+        });
+
+        async function loadJobInfo() {
+            const data = await getJob(currentJobId);
+
+            if (data.status === 200) {
+                document.getElementById('jobTitle').textContent = data.title;
+                document.getElementById('jobArea').textContent = `📂 ${data.area}`;
+                document.getElementById('jobLocation').textContent = `📍 ${formatLocation(data.city, data.state)}`;
+                document.getElementById('jobSalary').textContent = `💰 ${formatSalary(data.salary)}`;
+                jobInfo.style.display = 'block';
+            }
+        }
+
+        async function loadApplicants() {
+            loading.style.display = 'block';
+            applicantsList.innerHTML = '';
+            noResults.style.display = 'none';
+
+            const data = await getJobApplicants(companyId, currentJobId);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            loading.style.display = 'none';
+
+            if (data.status === 200 && data.items && data.items.length > 0) {
+                applicantsCount.textContent = `${data.items.length} candidato(s)`;
+                
+                data.items.forEach(applicant => {
+                    const card = createApplicantCard(applicant);
+                    applicantsList.appendChild(card);
+                });
+            } else if (data.status === 404 || (data.items && data.items.length === 0)) {
+                noResults.style.display = 'block';
+                applicantsCount.textContent = '0 candidatos';
+            } else if (data.status === 401) {
+                alert('❌ Sessão expirada. Faça login novamente.');
+                window.location.href = 'company-login.html';
+            } else if (data.status === 403) {
+                showError('❌ Você não tem permissão para ver os candidatos desta vaga.');
+            } else {
+                noResults.style.display = 'block';
+                applicantsCount.textContent = '0 candidatos';
+            }
+        }
+
+        function createApplicantCard(applicant) {
+            const card = document.createElement('div');
+            card.className = 'applicant-card';
+            card.dataset.userId = applicant.user_id;
+
+            const hasFeedback = applicant.feedback !== null && applicant.feedback !== undefined;
+
+            let feedbackSection = '';
+            if (hasFeedback) {
+                feedbackSection = `
+                    <div class="existing-feedback">
+                        <h4>✅ Feedback Enviado:</h4>
+                        <p>${applicant.feedback}</p>
+                    </div>
+                `;
+            } else {
+                feedbackSection = `
+                    <div class="feedback-form" id="feedbackForm-${applicant.user_id}" style="display: none;">
+                        <h4>💬 Enviar Feedback</h4>
+                        <textarea id="feedbackText-${applicant.user_id}" 
+                                  placeholder="Escreva seu feedback para o candidato... (10-600 caracteres)"
+                                  minlength="10" maxlength="600"></textarea>
+                        <button class="btn-send-feedback" onclick="sendFeedbackToApplicant(${applicant.user_id})">
+                            📤 Enviar Feedback
+                        </button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="applicant-header">
+                    <h3 class="applicant-name">👤 ${applicant.name}</h3>
+                </div>
+                <div class="applicant-contact">
+                    ${applicant.email ? `<span>📧 ${applicant.email}</span>` : ''}
+                    ${applicant.phone ? `<span>📞 ${applicant.phone}</span>` : ''}
+                </div>
+                
+                <div class="applicant-section">
+                    <h4>🎓 Formação Acadêmica</h4>
+                    <p>${applicant.education || 'Não informada'}</p>
+                </div>
+                
+                <div class="applicant-section">
+                    <h4>💼 Experiência Profissional</h4>
+                    <p>${applicant.experience || 'Não informada'}</p>
+                </div>
+                
+                ${feedbackSection}
+                
+                ${!hasFeedback ? `
+                <div class="applicant-actions">
+                    <button class="btn-toggle-feedback" onclick="toggleFeedbackForm(${applicant.user_id})">
+                        💬 Escrever Feedback
+                    </button>
+                </div>
+                ` : ''}
+            `;
+
+            return card;
+        }
+
+        function toggleFeedbackForm(userId) {
+            const form = document.getElementById(`feedbackForm-${userId}`);
+            if (form) {
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        async function sendFeedbackToApplicant(userId) {
+            hideMessages();
+
+            const textarea = document.getElementById(`feedbackText-${userId}`);
+            const message = textarea.value.trim();
+
+            if (!message) {
+                showError('❌ Digite uma mensagem de feedback.');
+                return;
+            }
+
+            if (message.length < 10 || message.length > 600) {
+                showError('❌ O feedback deve ter entre 10 e 600 caracteres.');
+                return;
+            }
+
+            const data = await sendFeedback(currentJobId, userId, message);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data.status === 200) {
+                showSuccess('✅ Feedback enviado com sucesso!');
+                // Recarrega a lista para mostrar o feedback
+                setTimeout(() => {
+                    loadApplicants();
+                }, 1000);
+            } else if (data.status === 401) {
+                showError('❌ Sessão expirada. Faça login novamente.');
+                setTimeout(() => {
+                    window.location.href = 'company-login.html';
+                }, 2000);
+            } else if (data.status === 403) {
+                showError('❌ Você não tem permissão para enviar feedback nesta vaga.');
+            } else if (data.status === 404) {
+                showError('❌ Vaga ou usuário não encontrado.');
+            } else if (data.status === 422) {
+                const errorText = formatJobValidationErrors(data.details);
+                showError('❌ Erro de validação:\n' + errorText);
+            } else {
+                showError('❌ Erro: ' + (data.message || 'Erro desconhecido'));
+            }
+        }
+
+        function showError(message) {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = message;
+            errorMessage.style.whiteSpace = 'pre-line';
+        }
+
+        function showSuccess(message) {
+            successMessage.style.display = 'block';
+            successMessage.textContent = message;
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function goBack() {
+            window.location.href = 'my-jobs.html';
+        }
+    </script>
+</body>
+
+</html>

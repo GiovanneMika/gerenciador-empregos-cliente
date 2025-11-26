@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Vagas</title>
+    <link rel="stylesheet" href="../assets/css/painel.css">
+    <style>
+        .search-section {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 24px;
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .search-section h3 {
+            margin-top: 0;
+            color: var(--text-primary);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .salary-range {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: auto;
+            padding: 12px 30px;
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+            width: auto;
+            padding: 12px 30px;
+        }
+
+        .search-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* Cards de Vagas */
+        .jobs-container {
+            margin-top: 30px;
+        }
+
+        .jobs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .jobs-count {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .job-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .job-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .job-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .job-area {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .job-company {
+            font-size: 15px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .job-location,
+        .job-salary {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .job-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .job-actions button {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .btn-apply {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .no-results h3 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel" style="max-width: 1000px;">
+        <h2>🔍 Buscar Vagas</h2>
+
+        <div class="search-section">
+            <h3>🎯 Filtros de Busca</h3>
+            
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label for="filterTitle">Título</label>
+                    <input type="text" id="filterTitle" placeholder="Ex: Desenvolvedor">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterArea">Área</label>
+                    <select id="filterArea">
+                        <option value="">Todas as áreas</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterCompany">Empresa</label>
+                    <input type="text" id="filterCompany" placeholder="Ex: Google">
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterState">Estado</label>
+                    <select id="filterState">
+                        <option value="">Todos os estados</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterCity">Cidade</label>
+                    <input type="text" id="filterCity" placeholder="Ex: São Paulo">
+                </div>
+
+                <div class="filter-group">
+                    <label>Faixa Salarial</label>
+                    <div class="salary-range">
+                        <input type="number" id="filterSalaryMin" placeholder="Mínimo" min="0">
+                        <input type="number" id="filterSalaryMax" placeholder="Máximo" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-buttons">
+                <button class="btn btn-search" onclick="performSearch()">🔍 Buscar</button>
+                <button class="btn btn-clear" onclick="clearFilters()">🧹 Limpar</button>
+            </div>
+        </div>
+
+        <div class="jobs-container">
+            <div class="jobs-header">
+                <h3>📋 Vagas Encontradas</h3>
+                <span class="jobs-count" id="jobsCount">0 vagas</span>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">⏳ Buscando vagas...</div>
+            <div id="jobsList"></div>
+            <div id="noResults" class="no-results" style="display: none;">
+                <h3>😕 Nenhuma vaga encontrada</h3>
+                <p>Tente ajustar os filtros de busca.</p>
+            </div>
+        </div>
+
+        <button class="btn btn-back" onclick="goBack()">⬅️ Voltar ao Painel</button>
+
+        <h3>📡 Resposta do Servidor</h3>
+        <pre id="responseArea">Aguardando busca...</pre>
+    </div>
+
+    <script src="../assets/js/jobs-api.js"></script>
+    <script>
+        const jobsList = document.getElementById('jobsList');
+        const jobsCount = document.getElementById('jobsCount');
+        const loading = document.getElementById('loading');
+        const noResults = document.getElementById('noResults');
+        const responseArea = document.getElementById('responseArea');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verifica se está logado
+            if (!isCompanyLogged() && !isUserLogged()) {
+                alert('❌ Faça login para buscar vagas.');
+                window.location.href = 'login-selection.html';
+                return;
+            }
+
+            // Popula selects
+            populateAreasSelect(document.getElementById('filterArea'));
+            populateStatesSelect(document.getElementById('filterState'));
+
+            // Busca inicial (todas as vagas)
+            performSearch();
+        });
+
+        async function performSearch() {
+            loading.style.display = 'block';
+            jobsList.innerHTML = '';
+            noResults.style.display = 'none';
+
+            // Monta filtros
+            const filters = {};
+
+            const title = document.getElementById('filterTitle').value.trim();
+            if (title) filters.title = title;
+
+            const area = document.getElementById('filterArea').value;
+            if (area) filters.area = area;
+
+            const company = document.getElementById('filterCompany').value.trim();
+            if (company) filters.company = company;
+
+            const state = document.getElementById('filterState').value;
+            if (state) filters.state = state;
+
+            const city = document.getElementById('filterCity').value.trim();
+            if (city) filters.city = city;
+
+            const salaryMin = document.getElementById('filterSalaryMin').value;
+            const salaryMax = document.getElementById('filterSalaryMax').value;
+            if (salaryMin || salaryMax) {
+                filters.salary_range = {
+                    min: salaryMin ? parseFloat(salaryMin) : null,
+                    max: salaryMax ? parseFloat(salaryMax) : null
+                };
+            }
+
+            const data = await searchJobs(filters);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            loading.style.display = 'none';
+
+            if (data.status === 200 && data.items && data.items.length > 0) {
+                jobsCount.textContent = `${data.items.length} vaga(s)`;
+                
+                data.items.forEach(job => {
+                    const card = createJobCard(job, true, false);
+                    card.onclick = () => viewJobDetail(job.job_id);
+                    jobsList.appendChild(card);
+                });
+            } else if (data.status === 404) {
+                noResults.style.display = 'block';
+                jobsCount.textContent = '0 vagas';
+            } else {
+                noResults.style.display = 'block';
+                jobsCount.textContent = '0 vagas';
+                if (data.message) {
+                    noResults.querySelector('p').textContent = data.message;
+                }
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('filterTitle').value = '';
+            document.getElementById('filterArea').value = '';
+            document.getElementById('filterCompany').value = '';
+            document.getElementById('filterState').value = '';
+            document.getElementById('filterCity').value = '';
+            document.getElementById('filterSalaryMin').value = '';
+            document.getElementById('filterSalaryMax').value = '';
+            
+            performSearch();
+        }
+
+        function viewJobDetail(jobId) {
+            window.location.href = `job-detail.html?id=${jobId}`;
+        }
+
+        function goBack() {
+            if (isCompanyLogged()) {
+                window.location.href = 'company-panel.html';
+            } else {
+                window.location.href = 'painel.html';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Vaga</title>
+    <link rel="stylesheet" href="../assets/css/painel.css">
+    <style>
+        .job-detail {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .job-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .job-detail-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 10px 0;
+        }
+
+        .job-detail-area {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .job-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .job-info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .job-info-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .job-info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .job-info-value.salary {
+            color: #48bb78;
+        }
+
+        .job-description-full {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+        }
+
+        .job-description-full h4 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        /* Formulário de Candidatura */
+        .application-section {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border: 2px solid #38b2ac;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .application-section h3 {
+            color: #234e52;
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #234e52;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #81e6d9;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #38b2ac;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.2);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #4a5568;
+            font-size: 13px;
+        }
+
+        .required::after {
+            content: ' *';
+            color: var(--danger-color);
+        }
+
+        .btn-apply {
+            background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
+            color: white;
+        }
+
+        .btn-apply:hover {
+            box-shadow: 0 8px 20px rgba(56, 178, 172, 0.4);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+        }
+
+        .error-message {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #c53030;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #276749;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .company-only-notice {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #92400e;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel" style="max-width: 900px;">
+        <h2>📋 Detalhes da Vaga</h2>
+
+        <div id="loading" class="loading">⏳ Carregando detalhes da vaga...</div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <div id="jobDetail" class="job-detail" style="display: none;">
+            <div class="job-detail-header">
+                <div>
+                    <h1 class="job-detail-title" id="jobTitle"></h1>
+                    <span class="job-detail-area" id="jobArea"></span>
+                </div>
+            </div>
+
+            <div class="job-info-grid">
+                <div class="job-info-item">
+                    <div class="job-info-label">🏢 Empresa</div>
+                    <div class="job-info-value" id="jobCompany"></div>
+                </div>
+                <div class="job-info-item">
+                    <div class="job-info-label">📍 Localização</div>
+                    <div class="job-info-value" id="jobLocation"></div>
+                </div>
+                <div class="job-info-item">
+                    <div class="job-info-label">💰 Salário</div>
+                    <div class="job-info-value salary" id="jobSalary"></div>
+                </div>
+                <div class="job-info-item">
+                    <div class="job-info-label">📧 Contato</div>
+                    <div class="job-info-value" id="jobContact"></div>
+                </div>
+            </div>
+
+            <div class="job-description-full">
+                <h4>📝 Descrição da Vaga</h4>
+                <div id="jobDescription"></div>
+            </div>
+        </div>
+
+        <!-- Formulário de candidatura (apenas para usuários) -->
+        <div id="applicationSection" class="application-section" style="display: none;">
+            <h3>📝 Candidatar-se a esta Vaga</h3>
+            
+            <form id="applicationForm">
+                <div class="form-group">
+                    <label for="appName" class="required">Nome Completo</label>
+                    <input type="text" id="appName" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="appEmail">Email (opcional)</label>
+                    <input type="email" id="appEmail" name="email" placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="appPhone">Telefone (opcional)</label>
+                    <input type="tel" id="appPhone" name="phone" placeholder="(00) 00000-0000">
+                </div>
+
+                <div class="form-group">
+                    <label for="appEducation" class="required">Formação Acadêmica</label>
+                    <textarea id="appEducation" name="education" 
+                              placeholder="Ex: Graduação em Análise e Desenvolvimento de Sistemas" 
+                              maxlength="600" required></textarea>
+                    <small>Máximo 600 caracteres</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="appExperience" class="required">Experiência Profissional</label>
+                    <textarea id="appExperience" name="experience" 
+                              placeholder="Descreva suas experiências profissionais relevantes..." 
+                              maxlength="600" required></textarea>
+                    <small>Máximo 600 caracteres</small>
+                </div>
+
+                <button type="submit" class="btn-apply">📤 Enviar Candidatura</button>
+            </form>
+        </div>
+
+        <!-- Aviso para empresas -->
+        <div id="companyNotice" class="company-only-notice" style="display: none;">
+            ⚠️ <strong>Empresas não podem se candidatar a vagas.</strong><br>
+            Esta funcionalidade é exclusiva para usuários candidatos.
+        </div>
+
+        <button class="btn btn-back" onclick="goBack()">⬅️ Voltar à Busca</button>
+
+        <h3>📡 Resposta do Servidor</h3>
+        <pre id="responseArea">Aguardando ação...</pre>
+    </div>
+
+    <script src="../assets/js/jobs-api.js"></script>
+    <script>
+        const loading = document.getElementById('loading');
+        const jobDetail = document.getElementById('jobDetail');
+        const applicationSection = document.getElementById('applicationSection');
+        const companyNotice = document.getElementById('companyNotice');
+        const applicationForm = document.getElementById('applicationForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const responseArea = document.getElementById('responseArea');
+
+        let currentJobId = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verifica se está logado
+            if (!isCompanyLogged() && !isUserLogged()) {
+                alert('❌ Faça login para ver detalhes da vaga.');
+                window.location.href = 'login-selection.html';
+                return;
+            }
+
+            // Obtém ID da vaga da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            currentJobId = urlParams.get('id');
+
+            if (!currentJobId) {
+                showError('❌ ID da vaga não informado.');
+                loading.style.display = 'none';
+                return;
+            }
+
+            // Carrega dados da vaga
+            await loadJobDetail();
+        });
+
+        async function loadJobDetail() {
+            const data = await getJob(currentJobId);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            loading.style.display = 'none';
+
+            if (data.status === 200) {
+                // Preenche os dados
+                document.getElementById('jobTitle').textContent = data.title;
+                document.getElementById('jobArea').textContent = data.area;
+                document.getElementById('jobCompany').textContent = data.company;
+                document.getElementById('jobLocation').textContent = formatLocation(data.city, data.state);
+                document.getElementById('jobSalary').textContent = formatSalary(data.salary);
+                document.getElementById('jobContact').textContent = data.contact || 'Não informado';
+                document.getElementById('jobDescription').textContent = data.description;
+
+                jobDetail.style.display = 'block';
+
+                // Mostra formulário de candidatura apenas para usuários
+                if (isUserLogged()) {
+                    applicationSection.style.display = 'block';
+                    
+                    // Pré-preenche com dados do usuário se disponível
+                    prefillUserData();
+                } else if (isCompanyLogged()) {
+                    companyNotice.style.display = 'block';
+                }
+            } else if (data.status === 404) {
+                showError('❌ Vaga não encontrada.');
+            } else {
+                showError('❌ Erro ao carregar vaga: ' + (data.message || 'Erro desconhecido'));
+            }
+        }
+
+        async function prefillUserData() {
+            // Tenta pré-preencher com dados do usuário
+            const userId = sessionStorage.getItem('userId');
+            if (!userId) return;
+
+            try {
+                const response = await fetch(`${getApiBase()}/users/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('jwtToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    document.getElementById('appName').value = userData.name || '';
+                    document.getElementById('appEmail').value = userData.email || '';
+                    document.getElementById('appPhone').value = userData.phone || '';
+                    document.getElementById('appEducation').value = userData.education || '';
+                    document.getElementById('appExperience').value = userData.experience || '';
+                }
+            } catch (e) {
+                console.log('Could not prefill user data:', e);
+            }
+        }
+
+        // Submit da candidatura
+        applicationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessages();
+
+            const applicationData = {
+                name: document.getElementById('appName').value.trim(),
+                education: document.getElementById('appEducation').value.trim(),
+                experience: document.getElementById('appExperience').value.trim()
+            };
+
+            // Campos opcionais
+            const email = document.getElementById('appEmail').value.trim();
+            if (email) applicationData.email = email;
+
+            const phone = document.getElementById('appPhone').value.trim();
+            if (phone) applicationData.phone = phone;
+
+            const data = await applyToJob(currentJobId, applicationData);
+            responseArea.textContent = JSON.stringify(data, null, 2);
+
+            if (data.status === 200) {
+                showSuccess('✅ Candidatura enviada com sucesso! Boa sorte!');
+                applicationForm.style.display = 'none';
+                
+                setTimeout(() => {
+                    if (confirm('Deseja ver suas candidaturas?')) {
+                        window.location.href = 'my-applications.html';
+                    }
+                }, 1500);
+            } else if (data.status === 401) {
+                showError('❌ Token inválido. Faça login novamente.');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            } else if (data.status === 403) {
+                showError('❌ Apenas usuários podem se candidatar a vagas.');
+            } else if (data.status === 404) {
+                showError('❌ Vaga não encontrada.');
+            } else if (data.status === 422) {
+                const errorText = formatJobValidationErrors(data.details);
+                showError('❌ Erro de validação:\n' + errorText);
+            } else {
+                showError('❌ Erro: ' + (data.message || 'Erro desconhecido'));
+            }
+        });
+
+        function showError(message) {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = message;
+            errorMessage.style.whiteSpace = 'pre-line';
+        }
+
+        function showSuccess(message) {
+            successMessage.style.display = 'block';
+            successMessage.textContent = message;
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function goBack() {
+            window.location.href = 'job-search.html';
+        }
+    </script>
+</body>
+
+</html>

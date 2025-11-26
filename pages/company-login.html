@@ -68,7 +68,9 @@
                 if (payload && payload.role === 'company') {
                     // Salva dados da sessão
                     sessionStorage.setItem('companyToken', data.token);
-                    sessionStorage.setItem('companyId', payload.sub);
+                    // payload.sub has format "company:1", extract only the numeric ID
+                    const companyId = payload.sub.includes(':') ? payload.sub.split(':')[1] : payload.sub;
+                    sessionStorage.setItem('companyId', companyId);
                     sessionStorage.setItem('companyUsername', payload.username);
                     
                     alert('✅ Login realizado com sucesso!');

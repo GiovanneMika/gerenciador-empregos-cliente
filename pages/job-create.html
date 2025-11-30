@@ -148,12 +148,6 @@
                 <small>Deixe vazio para "A combinar"</small>
             </div>
 
-            <div class="form-group">
-                <label for="contact" class="required">Email de Contato</label>
-                <input type="email" id="contact" name="contact" placeholder="Ex: rh@empresa.com.br" required>
-                <small>Email para os candidatos entrarem em contato</small>
-            </div>
-
             <button type="submit" class="btn-submit">✅ Cadastrar Vaga</button>
             <button type="button" class="btn-back" onclick="goBack()">⬅️ Voltar</button>
         </form>
@@ -194,8 +188,7 @@
                 area: document.getElementById('area').value,
                 description: document.getElementById('description').value.trim(),
                 state: document.getElementById('state').value,
-                city: document.getElementById('city').value.trim(),
-                contact: document.getElementById('contact').value.trim()
+                city: document.getElementById('city').value.trim()
             };
 
             // Adiciona salário apenas se preenchido

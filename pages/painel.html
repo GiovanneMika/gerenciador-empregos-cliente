@@ -48,14 +48,30 @@
             delete data.status;
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
-            if (data && data.username) {
+            if (data && (data.username || data.user_name || data.userName)) {
+                // Helper function to get field value with fallbacks for alternative names
+                const getField = (primary, ...alternatives) => {
+                    if (data[primary] !== undefined && data[primary] !== null) return data[primary];
+                    for (const alt of alternatives) {
+                        if (data[alt] !== undefined && data[alt] !== null) return data[alt];
+                    }
+                    return null;
+                };
+
+                const name = getField('name', 'nome', 'full_name', 'fullName') || 'Não informado';
+                const username = getField('username', 'user_name', 'userName', 'login') || 'Não informado';
+                const email = getField('email', 'e_mail', 'emailAddress') || 'Não informado';
+                const phone = getField('phone', 'telefone', 'telephone', 'cellphone', 'phoneNumber') || 'Não informado';
+                const experience = getField('experience', 'experiencia', 'experiences', 'work_experience') || 'Não informada';
+                const education = getField('education', 'educacao', 'formacao', 'formation', 'academic') || 'Não informada';
+
                 userInfoDiv.innerHTML = `
-                    <p><strong>Nome:</strong> ${data.name}</p>
-                    <p><strong>Usuário:</strong> ${data.username}</p>
-                    <p><strong>Email:</strong> ${data.email || 'Não informado'}</p>
-                    <p><strong>Telefone:</strong> ${data.phone || 'Não informado'}</p>
-                    <p><strong>Experiência:</strong> ${data.experience || 'Não informada'}</p>
-                    <p><strong>Formação:</strong> ${data.education || 'Não informada'}</p>
+                    <p><strong>Nome:</strong> ${name}</p>
+                    <p><strong>Usuário:</strong> ${username}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Telefone:</strong> ${phone}</p>
+                    <p><strong>Experiência:</strong> ${experience}</p>
+                    <p><strong>Formação:</strong> ${education}</p>
                 `;
             } else {
                 alert('Token inválido ou usuário não encontrado.');

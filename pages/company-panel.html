@@ -50,14 +50,42 @@
             const data = await companyApiCall(`/companies/${companyId}`, 'GET');
             responseArea.innerText = JSON.stringify(data, null, 2);
 
-            if (data.status === 200 && data.name) {
+            if (data.status === 200 && (data.name || data.nome || data.company_name)) {
+                // Helper function to get field value with fallbacks for alternative names
+                const getField = (primary, ...alternatives) => {
+                    if (data[primary] !== undefined && data[primary] !== null) return data[primary];
+                    for (const alt of alternatives) {
+                        if (data[alt] !== undefined && data[alt] !== null) return data[alt];
+                    }
+                    return null;
+                };
+
+                const name = getField('name', 'nome', 'company_name', 'companyName') || 'Não informado';
+                const business = getField('business', 'ramo', 'business_type', 'businessType', 'industry') || 'Não informado';
+                const username = getField('username', 'user_name', 'userName', 'login') || 'Não informado';
+                const email = getField('email', 'e_mail', 'emailAddress') || 'Não informado';
+                const phone = getField('phone', 'telefone', 'telephone', 'phoneNumber') || 'Não informado';
+                const street = getField('street', 'rua', 'address', 'endereco') || '';
+                const number = getField('number', 'numero', 'addressNumber', 'num') || '';
+                const city = getField('city', 'cidade', 'municipio') || '';
+                const state = getField('state', 'estado', 'uf', 'province') || '';
+
+                // Build address string, handling missing parts
+                let addressParts = [];
+                if (street) addressParts.push(street);
+                if (number) addressParts.push(number);
+                let address = addressParts.join(', ') || 'Não informado';
+                if (city || state) {
+                    address += ` - ${city || ''}${city && state ? '/' : ''}${state || ''}`;
+                }
+
                 companyInfoDiv.innerHTML = `
-                    <p><strong>Nome:</strong> ${data.name}</p>
-                    <p><strong>Ramo:</strong> ${data.business}</p>
-                    <p><strong>Username:</strong> ${data.username}</p>
-                    <p><strong>Email:</strong> ${data.email}</p>
-                    <p><strong>Telefone:</strong> ${data.phone}</p>
-                    <p><strong>Endereço:</strong> ${data.street}, ${data.number} - ${data.city}/${data.state}</p>
+                    <p><strong>Nome:</strong> ${name}</p>
+                    <p><strong>Ramo:</strong> ${business}</p>
+                    <p><strong>Username:</strong> ${username}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Telefone:</strong> ${phone}</p>
+                    <p><strong>Endereço:</strong> ${address}</p>
                 `;
             } else if (data.status === 401) {
                 alert('❌ Token inválido. Redirecionando para login...');

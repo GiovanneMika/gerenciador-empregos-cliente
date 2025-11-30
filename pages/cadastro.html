@@ -96,7 +96,7 @@
 
             if (data?.message === 'Created') {
                 alert('✅ Usuário cadastrado com sucesso! Agora você pode fazer login.');
-                window.location.href = 'login.html';
+                navigateAfterApiCall('login.html', 500);
             } else if (data?.details) {
                 const errors = data.details.map(d => `• ${d.field}: ${d.error}`).join('\n');
                 alert(`⚠️ Erro de validação:\n${errors}`);

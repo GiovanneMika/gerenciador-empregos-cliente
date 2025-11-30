@@ -415,14 +415,14 @@
                 
                 setTimeout(() => {
                     if (confirm('Deseja ver suas candidaturas?')) {
-                        window.location.href = 'my-applications.html';
+                        navigateAfterApiCall('my-applications.html', 500);
                     }
-                }, 1500);
+                }, 2000);
             } else if (data.status === 401) {
                 showError('❌ Token inválido. Faça login novamente.');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
+                    navigateAfterApiCall('login.html', 500);
+                }, 2500);
             } else if (data.status === 403) {
                 showError('❌ Apenas usuários podem se candidatar a vagas.');
             } else if (data.status === 404) {

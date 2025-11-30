@@ -70,7 +70,7 @@ function parseJwt(token) {
     try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
         return JSON.parse(jsonPayload);
@@ -89,35 +89,35 @@ function parseJwt(token) {
 async function jobsApiCall(endpoint, method = 'GET', body = null) {
     const url = `${getApiBase()}${endpoint}`;
     const token = getAuthToken();
-    
+
     const headers = {
         'Content-Type': 'application/json'
     };
-    
+
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
-    
+
     try {
         const options = {
             method: method,
             headers: headers
         };
-        
+
         if (body && method !== 'GET') {
             options.body = JSON.stringify(body);
         }
-        
+
         const response = await fetch(url, options);
         const data = await response.json();
-        
+
         data.status = response.status;
-        
+
         // Tratamento de erro 401 (token inválido)
         if (response.status === 401) {
             handleUnauthorized();
         }
-        
+
         return data;
     } catch (error) {
         console.error('Erro na API de Jobs:', error);
@@ -184,12 +184,12 @@ async function createJob(jobData) {
  */
 async function getJob(jobId) {
     const data = await jobsApiCall(`/jobs/${jobId}`, 'GET');
-    
+
     if (data.status === 200) {
         const expectedFields = ['job_id', 'title', 'area', 'description', 'company', 'state', 'city', 'contact'];
         validateResponseFields(data, expectedFields);
     }
-    
+
     return data;
 }
 
@@ -201,7 +201,7 @@ async function searchJobs(filters = {}) {
     const body = {
         filters: [filters]
     };
-    
+
     const data = await jobsApiCall('/jobs/search', 'POST', body);
     return data;
 }
@@ -211,10 +211,8 @@ async function searchJobs(filters = {}) {
  * POST /companies/{company_id}/jobs
  */
 async function getCompanyJobs(companyId, filters = {}) {
-    const body = {
-        filters: [filters]
-    };
-    
+    const body = filters;
+
     return await jobsApiCall(`/companies/${companyId}/jobs`, 'POST', body);
 }
 
@@ -301,7 +299,7 @@ function formatLocation(city, state) {
  */
 function formatJobValidationErrors(details) {
     if (!details || !Array.isArray(details)) return 'Erro de validação';
-    
+
     const fieldTranslations = {
         'title': 'Título',
         'area': 'Área',
@@ -318,7 +316,7 @@ function formatJobValidationErrors(details) {
         'user_id': 'ID do Usuário',
         'message': 'Mensagem'
     };
-    
+
     const errorTranslations = {
         'required': 'campo obrigatório',
         'too_short': 'muito curto',
@@ -329,7 +327,7 @@ function formatJobValidationErrors(details) {
         'invalid_area': 'área inválida',
         'invalid_state': 'estado inválido'
     };
-    
+
     return details.map(error => {
         const field = fieldTranslations[error.field] || error.field;
         const errorMsg = errorTranslations[error.error] || error.error;
@@ -344,9 +342,9 @@ function createJobCard(job, showActions = false, isCompany = false) {
     const card = document.createElement('div');
     card.className = 'job-card';
     card.dataset.jobId = job.job_id;
-    
+
     let actionsHtml = '';
-    
+
     if (showActions) {
         if (isCompany) {
             actionsHtml = `
@@ -364,7 +362,7 @@ function createJobCard(job, showActions = false, isCompany = false) {
             `;
         }
     }
-    
+
     // Verifica se tem feedback (para candidaturas do usuário)
     let feedbackHtml = '';
     if ('feedback' in job && job.feedback !== null) {
@@ -381,7 +379,7 @@ function createJobCard(job, showActions = false, isCompany = false) {
             </div>
         `;
     }
-    
+
     card.innerHTML = `
         <div class="job-header">
             <h3 class="job-title">${job.title}</h3>
@@ -394,7 +392,7 @@ function createJobCard(job, showActions = false, isCompany = false) {
         ${feedbackHtml}
         ${actionsHtml}
     `;
-    
+
     return card;
 }
 
@@ -403,7 +401,7 @@ function createJobCard(job, showActions = false, isCompany = false) {
  */
 function populateAreasSelect(selectElement, selectedValue = '') {
     selectElement.innerHTML = '<option value="">Selecione a área...</option>';
-    
+
     JOB_AREAS.forEach(area => {
         const option = document.createElement('option');
         option.value = area;
@@ -418,7 +416,7 @@ function populateAreasSelect(selectElement, selectedValue = '') {
  */
 function populateStatesSelect(selectElement, selectedValue = '') {
     selectElement.innerHTML = '<option value="">Selecione o estado...</option>';
-    
+
     BRAZILIAN_STATES.forEach(state => {
         const option = document.createElement('option');
         option.value = state;
@@ -426,4 +424,16 @@ function populateStatesSelect(selectElement, selectedValue = '') {
         if (state === selectedValue) option.selected = true;
         selectElement.appendChild(option);
     });
+}
+
+/**
+ * Função auxiliar para redirecionar após uma chamada à API
+ * Aguarda tempo suficiente para a resposta aparecer no Network
+ * @param {string} url - URL para redirecionar
+ * @param {number} delay - Tempo de espera em ms (padrão: 500ms)
+ */
+function navigateAfterApiCall(url, delay = 500) {
+    setTimeout(() => {
+        window.location.href = url;
+    }, delay);
 }

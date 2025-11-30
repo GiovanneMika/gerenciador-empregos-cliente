@@ -162,7 +162,7 @@
 
             if (data.status === 200) {
                 alert('✅ Dados atualizados com sucesso!');
-                window.location.href = 'company-panel.html';
+                navigateAfterApiCall('company-panel.html', 500);
             } else if (data.status === 422) {
                 alert(handleValidationError(data));
             } else if (data.status === 409) {

@@ -73,8 +73,19 @@
                     <p><strong>Experiência:</strong> ${experience}</p>
                     <p><strong>Formação:</strong> ${education}</p>
                 `;
+            } else if (data && data.message) {
+                // Erro de API (conexão, token expirado, etc.) - mostra erro mas não faz loop
+                userInfoDiv.innerHTML = `<p class="error">Erro ao carregar dados: ${data.message}</p>`;
+                // Só limpa sessão se for erro de autenticação (401/403)
+                if (data.message.includes('401') || data.message.includes('403') || 
+                    data.message.includes('Unauthorized') || data.message.includes('Token')) {
+                    alert('Sessão expirada. Faça login novamente.');
+                    sessionStorage.clear();
+                    window.location.href = 'login.html';
+                }
             } else {
-                alert('Token inválido ou usuário não encontrado.');
+                // Usuário realmente não encontrado
+                alert('Usuário não encontrado.');
                 sessionStorage.clear();
                 window.location.href = 'login.html';
             }
@@ -97,7 +108,7 @@
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
             alert(data.message || 'Sessão encerrada.');
             sessionStorage.clear();
-            window.location.href = 'login.html';
+            navigateAfterApiCall('login.html', 500);
         });
 
         document.getElementById('deleteBtn').addEventListener('click', async () => {
@@ -109,7 +120,7 @@
                 if (data.message && data.message.includes('deleted')) {
                     alert('Conta deletada com sucesso.');
                     sessionStorage.clear();
-                    window.location.href = 'login.html';
+                    navigateAfterApiCall('login.html', 500);
                 } else {
                     alert(data.message || 'Erro ao deletar conta.');
                 }

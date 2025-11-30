@@ -121,7 +121,7 @@
             responseArea.innerText = JSON.stringify(data, null, 2);
             
             alert('✅ Logout realizado com sucesso.');
-            window.location.href = 'company-login.html';
+            navigateAfterApiCall('company-login.html', 500);
         });
 
         document.getElementById('deleteBtn').addEventListener('click', async () => {
@@ -133,7 +133,7 @@
                 if (data.status === 200) {
                     alert('✅ Empresa deletada com sucesso.');
                     sessionStorage.clear();
-                    window.location.href = 'company-login.html';
+                    navigateAfterApiCall('company-login.html', 500);
                 } else if (data.status === 409) {
                     alert('❌ Não é possível deletar a empresa: ela possui vagas ativas.');
                 } else {

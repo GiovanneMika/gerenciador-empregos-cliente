@@ -43,43 +43,41 @@
         const responseArea = document.getElementById('responseArea');
         let userId = null;
 
-        function parseJwt(token) {
-            try {
-                return JSON.parse(atob(token.split('.')[1]));
-            } catch {
-                return null;
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
             const token = sessionStorage.getItem('jwtToken');
-            if (!token) return (window.location.href = 'login.html');
-
-            const payload = parseJwt(token);
-            if (!payload?.sub) {
-                sessionStorage.clear();
+            userId = sessionStorage.getItem('userId');
+            
+            if (!token || !userId) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            userId = payload.sub;
             const data = await apiCall(`/users/${userId}`, 'GET');
             delete data.status;
             responseArea.innerText = JSON.stringify(data, null, 2).replace(/\\n/g, '\n');
 
-            // Verifica se retornou dados válidos (deve ter id ou email)
-            if (!data || data.message) {
-                alert(data?.message || 'Erro ao carregar dados.');
+            // Verifica se retornou dados válidos
+            if (data && data.name) {
+                document.getElementById('updateName').value = data.name || '';
+                document.getElementById('updateEmail').value = data.email || '';
+                document.getElementById('updatePhone').value = data.phone || '';
+                document.getElementById('updateExperience').value = data.experience || '';
+                document.getElementById('updateEducation').value = data.education || '';
+            } else if (data && data.message) {
+                // Erro de API - só redireciona se for erro de autenticação
+                if (data.message.includes('401') || data.message.includes('403') || 
+                    data.message.includes('Unauthorized') || data.message.includes('Token')) {
+                    alert('Sessão expirada. Faça login novamente.');
+                    sessionStorage.clear();
+                    window.location.href = 'login.html';
+                } else {
+                    alert(`Erro ao carregar dados: ${data.message}`);
+                }
+            } else {
+                alert('Usuário não encontrado.');
                 sessionStorage.clear();
                 window.location.href = 'login.html';
-                return;
             }
-
-            document.getElementById('updateName').value = data.name || '';
-            document.getElementById('updateEmail').value = data.email || '';
-            document.getElementById('updatePhone').value = data.phone || '';
-            document.getElementById('updateExperience').value = data.experience || '';
-            document.getElementById('updateEducation').value = data.education || '';
         });
 
         document.getElementById('cancelBtn').addEventListener('click', () => {
@@ -123,7 +121,7 @@
                     sessionStorage.setItem('currentUser', JSON.stringify(data));
                 }
                 alert('✅ Dados atualizados com sucesso!');
-                window.location.href = 'painel.html';
+                navigateAfterApiCall('painel.html', 500);
             } else {
                 alert(`⚠️ Erro ao atualizar: ${data?.message || 'Erro desconhecido'}`);
             }

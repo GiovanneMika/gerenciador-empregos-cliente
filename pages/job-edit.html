@@ -261,13 +261,13 @@
                 showSuccess('✅ Vaga atualizada com sucesso!');
                 
                 setTimeout(() => {
-                    window.location.href = 'my-jobs.html';
-                }, 1500);
+                    navigateAfterApiCall('my-jobs.html', 500);
+                }, 2000);
             } else if (data.status === 401) {
                 showError('❌ Token inválido. Faça login novamente.');
                 setTimeout(() => {
-                    window.location.href = 'company-login.html';
-                }, 2000);
+                    navigateAfterApiCall('company-login.html', 500);
+                }, 2500);
             } else if (data.status === 403) {
                 showError('❌ Você não tem permissão para editar esta vaga.');
             } else if (data.status === 404) {
@@ -290,7 +290,7 @@
 
             if (data.status === 200) {
                 alert('✅ Vaga excluída com sucesso!');
-                window.location.href = 'my-jobs.html';
+                navigateAfterApiCall('my-jobs.html', 500);
             } else if (data.status === 403) {
                 showError('❌ Você não tem permissão para excluir esta vaga.');
             } else if (data.status === 404) {

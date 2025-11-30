@@ -208,14 +208,14 @@
                     if (confirm('Deseja cadastrar outra vaga?')) {
                         hideMessages();
                     } else {
-                        window.location.href = 'my-jobs.html';
+                        navigateAfterApiCall('my-jobs.html', 500);
                     }
-                }, 1000);
+                }, 1500);
             } else if (data.status === 401) {
                 showError('❌ Token inválido. Faça login novamente.');
                 setTimeout(() => {
-                    window.location.href = 'company-login.html';
-                }, 2000);
+                    navigateAfterApiCall('company-login.html', 500);
+                }, 2500);
             } else if (data.status === 403) {
                 showError('❌ Apenas empresas podem cadastrar vagas.');
             } else if (data.status === 422) {

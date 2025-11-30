@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <title>Login Empresa - Sistema de Empregos</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="https://kit.fontawesome.com/a2e0e6ad4b.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
     <!-- Indicador de Servidor -->
     <div class="server-indicator" onclick="window.location.href='config-server.html'" title="Clique para configurar">
@@ -52,7 +54,7 @@
 
         document.getElementById('companyLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const body = {
                 username: document.getElementById('loginUsername').value.trim(),
                 password: document.getElementById('loginPassword').value.trim()
@@ -64,17 +66,19 @@
             if (data.status === 200 && data.token) {
                 // Decodifica o token para obter informações da empresa
                 const payload = parseJwt(data.token);
-                
+
                 if (payload && payload.role === 'company') {
                     // Salva dados da sessão
                     sessionStorage.setItem('companyToken', data.token);
-                    // payload.sub has format "company:1", extract only the numeric ID
-                    const companyId = payload.sub.includes(':') ? payload.sub.split(':')[1] : payload.sub;
+                    const companyId = payload.sub;
                     sessionStorage.setItem('companyId', companyId);
                     sessionStorage.setItem('companyUsername', payload.username);
-                    
+
                     alert('✅ Login realizado com sucesso!');
-                    window.location.href = 'company-panel.html';
+                    // Aguarda um pouco para garantir que a resposta aparece no Network
+                    setTimeout(() => {
+                        window.location.href = 'company-panel.html';
+                    }, 500);
                 } else {
                     alert('❌ Token inválido. Tente novamente.');
                 }
@@ -86,4 +90,5 @@
         });
     </script>
 </body>
+
 </html>

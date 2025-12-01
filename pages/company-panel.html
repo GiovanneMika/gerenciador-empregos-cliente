@@ -30,6 +30,7 @@
         <pre id="responseArea">Aguardando resposta...</pre>
     </div>
 
+    <script src="../assets/js/protocol-validator.js"></script>
     <script src="../assets/js/company-api.js"></script>
     <script src="../assets/js/jobs-api.js"></script>
     <script>
@@ -119,7 +120,7 @@
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             const data = await companyLogout();
             responseArea.innerText = JSON.stringify(data, null, 2);
-            
+
             alert('✅ Logout realizado com sucesso.');
             navigateAfterApiCall('company-login.html', 500);
         });

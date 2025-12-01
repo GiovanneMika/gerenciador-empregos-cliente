@@ -67,6 +67,21 @@ async function companyApiCall(endpoint, method = 'GET', body = null) {
     }
 }
 
+/**
+ * Busca dados de uma empresa específica com validação de protocolo
+ * GET /companies/{id}
+ */
+async function getCompany(companyId) {
+    const data = await companyApiCall(`/companies/${companyId}`, 'GET');
+    
+    // Validação via protocol-validator.js
+    if (data.status === 200 && window.ProtocolValidator) {
+        window.ProtocolValidator.validateCompanyResponse(data, `GET /companies/${companyId}`);
+    }
+    
+    return data;
+}
+
 // Função para decodificar JWT
 function parseJwt(token) {
     try {

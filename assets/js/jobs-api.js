@@ -138,32 +138,30 @@ function handleUnauthorized() {
 }
 
 /**
- * Envia erro de protocolo para o servidor (fallback)
- * @param {string} message - Mensagem de erro
+ * Usa o validador de protocolo global se disponível,
+ * senão usa implementação local de fallback
  */
-async function reportProtocolError(message) {
-    try {
-        await jobsApiCall('/error', 'POST', { message });
-        console.warn('Protocol error reported:', message);
-    } catch (e) {
-        console.error('Failed to report protocol error:', e);
+function getProtocolValidator() {
+    if (window.ProtocolValidator) {
+        return window.ProtocolValidator;
     }
-}
-
-/**
- * Valida se resposta contém campos esperados
- * @param {object} data - Dados recebidos
- * @param {array} expectedFields - Campos esperados
- * @returns {boolean}
- */
-function validateResponseFields(data, expectedFields) {
-    for (const field of expectedFields) {
-        if (!(field in data)) {
-            reportProtocolError(`Index '${field}' not found in server data.`);
-            return false;
-        }
-    }
-    return true;
+    // Fallback local se o validador não estiver carregado
+    return {
+        reportProtocolError: async (message) => {
+            try {
+                await jobsApiCall('/error', 'POST', { message });
+                console.warn('Protocol error reported:', message);
+            } catch (e) {
+                console.error('Failed to report protocol error:', e);
+            }
+        },
+        validateJobResponse: () => true,
+        validateJobSearchResponse: () => true,
+        validateCompanyJobsResponse: () => true,
+        validateUserApplicationsResponse: () => true,
+        validateJobApplicantsResponse: () => true,
+        validateValidationErrorResponse: () => true
+    };
 }
 
 // =====================
@@ -181,13 +179,23 @@ async function createJob(jobData) {
 /**
  * Ler dados de uma vaga específica
  * GET /jobs/{job_id}
+ * 
+ * Response: job_id, title, area, description, company, state, city, salary, contact
+ * contact = email da empresa que criou a vaga
  */
 async function getJob(jobId) {
     const data = await jobsApiCall(`/jobs/${jobId}`, 'GET');
 
     if (data.status === 200) {
-        const expectedFields = ['job_id', 'title', 'area', 'description', 'company', 'state', 'city', 'contact'];
-        validateResponseFields(data, expectedFields);
+        // Server may return 'id' or 'job_id' - normalize to job_id
+        if (data.id && !data.job_id) {
+            data.job_id = data.id;
+        }
+        
+        // Validação via protocol-validator.js
+        if (window.ProtocolValidator) {
+            window.ProtocolValidator.validateJobResponse(data, `GET /jobs/${jobId}`);
+        }
     }
 
     return data;
@@ -196,6 +204,10 @@ async function getJob(jobId) {
 /**
  * Buscar vagas com filtros
  * POST /jobs/search
+ * 
+ * Body: filters array with optional: title, area, company, state, city, salary_range
+ * salary_range: { min: numeric|null, max: numeric|null }
+ * Response: items array with job objects (job_id, title, area, company, description, state, city, salary, contact)
  */
 async function searchJobs(filters = {}) {
     const body = {
@@ -203,17 +215,35 @@ async function searchJobs(filters = {}) {
     };
 
     const data = await jobsApiCall('/jobs/search', 'POST', body);
+    
+    // Validação via protocol-validator.js
+    if (data.status === 200 && window.ProtocolValidator) {
+        window.ProtocolValidator.validateJobSearchResponse(data, 'POST /jobs/search');
+    }
+    
     return data;
 }
 
 /**
  * Buscar vagas da empresa logada
  * POST /companies/{company_id}/jobs
+ * 
+ * Body: filters array with optional: title, area, state, city, salary_range
+ * Response: items array with job objects
  */
 async function getCompanyJobs(companyId, filters = {}) {
-    const body = filters;
+    const body = {
+        filters: [filters]
+    };
 
-    return await jobsApiCall(`/companies/${companyId}/jobs`, 'POST', body);
+    const data = await jobsApiCall(`/companies/${companyId}/jobs`, 'POST', body);
+    
+    // Validação via protocol-validator.js
+    if (data.status === 200 && window.ProtocolValidator) {
+        window.ProtocolValidator.validateCompanyJobsResponse(data, `POST /companies/${companyId}/jobs`);
+    }
+    
+    return data;
 }
 
 /**
@@ -239,6 +269,9 @@ async function deleteJob(jobId) {
 /**
  * Aplicar a uma vaga (apenas usuário)
  * POST /jobs/{job_id}
+ * 
+ * Body: name (obrigatório), email (opcional), phone (opcional), 
+ *       education (obrigatório, max 600), experience (obrigatório, max 600)
  */
 async function applyToJob(jobId, applicationData) {
     return await jobsApiCall(`/jobs/${jobId}`, 'POST', applicationData);
@@ -247,23 +280,44 @@ async function applyToJob(jobId, applicationData) {
 /**
  * Listar candidaturas do usuário logado
  * GET /users/{user_id}/jobs
+ * 
+ * Response: items array with job objects including feedback field
+ * feedback = null (aguardando) ou string (mensagem da empresa)
  */
 async function getUserApplications(userId) {
     const data = await jobsApiCall(`/users/${userId}/jobs`, 'GET');
+    
+    // Validação via protocol-validator.js
+    if (data.status === 200 && window.ProtocolValidator) {
+        window.ProtocolValidator.validateUserApplicationsResponse(data, `GET /users/${userId}/jobs`);
+    }
+    
     return data;
 }
 
 /**
  * Listar candidatos de uma vaga (apenas empresa dona)
  * GET /companies/{company_id}/jobs/{job_id}
+ * 
+ * Response: items array with candidate objects
+ * Each candidate: user_id, name, email, phone, education, experience
  */
 async function getJobApplicants(companyId, jobId) {
-    return await jobsApiCall(`/companies/${companyId}/jobs/${jobId}`, 'GET');
+    const data = await jobsApiCall(`/companies/${companyId}/jobs/${jobId}`, 'GET');
+    
+    // Validação via protocol-validator.js
+    if (data.status === 200 && window.ProtocolValidator) {
+        window.ProtocolValidator.validateJobApplicantsResponse(data, `GET /companies/${companyId}/jobs/${jobId}`);
+    }
+    
+    return data;
 }
 
 /**
  * Enviar feedback para candidato (apenas empresa)
  * POST /jobs/{job_id}/feedback
+ * 
+ * Body: user_id (int, obrigatório), message (string, obrigatório, 10-600 chars)
  */
 async function sendFeedback(jobId, userId, message) {
     return await jobsApiCall(`/jobs/${jobId}/feedback`, 'POST', {
@@ -341,7 +395,10 @@ function formatJobValidationErrors(details) {
 function createJobCard(job, showActions = false, isCompany = false) {
     const card = document.createElement('div');
     card.className = 'job-card';
-    card.dataset.jobId = job.job_id;
+    
+    // Fallback: server may return 'id' or 'job_id'
+    const jobId = job.job_id || job.id;
+    card.dataset.jobId = jobId;
 
     let actionsHtml = '';
 
@@ -349,15 +406,15 @@ function createJobCard(job, showActions = false, isCompany = false) {
         if (isCompany) {
             actionsHtml = `
                 <div class="job-actions">
-                    <button class="btn-edit" onclick="editJob(${job.job_id})">✏️ Editar</button>
-                    <button class="btn-view-applicants" onclick="viewApplicants(${job.job_id})">👥 Candidatos</button>
-                    <button class="btn-delete" onclick="deleteJobConfirm(${job.job_id})">🗑️ Excluir</button>
+                    <button class="btn-edit" onclick="editJob(${jobId})">✏️ Editar</button>
+                    <button class="btn-view-applicants" onclick="viewApplicants(${jobId})">👥 Candidatos</button>
+                    <button class="btn-delete" onclick="deleteJobConfirm(${jobId})">🗑️ Excluir</button>
                 </div>
             `;
         } else {
             actionsHtml = `
                 <div class="job-actions">
-                    <button class="btn-apply" onclick="viewJobDetail(${job.job_id})">📝 Ver Detalhes</button>
+                    <button class="btn-apply" onclick="viewJobDetail(${jobId})">📝 Ver Detalhes</button>
                 </div>
             `;
         }
@@ -382,12 +439,13 @@ function createJobCard(job, showActions = false, isCompany = false) {
 
     card.innerHTML = `
         <div class="job-header">
-            <h3 class="job-title">${job.title}</h3>
-            <span class="job-area">${job.area}</span>
+            <h3 class="job-title">${job.title || 'Sem título'}</h3>
+            <span class="job-area">${job.area || 'Não especificada'}</span>
         </div>
-        <div class="job-company">🏢 ${job.company}</div>
-        <div class="job-location">📍 ${formatLocation(job.city, job.state)}</div>
+        <div class="job-company">🏢 ${job.company || 'Empresa não informada'}</div>
+        <div class="job-location">📍 ${formatLocation(job.city || '', job.state || '')}</div>
         <div class="job-salary">💰 ${formatSalary(job.salary)}</div>
+        ${job.contact ? `<div class="job-contact">📧 ${job.contact}</div>` : ''}
         <p class="job-description">${job.description ? job.description.substring(0, 150) + '...' : ''}</p>
         ${feedbackHtml}
         ${actionsHtml}

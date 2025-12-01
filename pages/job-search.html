@@ -274,6 +274,7 @@
         <pre id="responseArea">Aguardando busca...</pre>
     </div>
 
+    <script src="../assets/js/protocol-validator.js"></script>
     <script src="../assets/js/jobs-api.js"></script>
     <script>
         const jobsList = document.getElementById('jobsList');
@@ -341,7 +342,8 @@
                 
                 data.items.forEach(job => {
                     const card = createJobCard(job, true, false);
-                    card.onclick = () => viewJobDetail(job.job_id);
+                    const jobId = job.job_id || job.id;
+                    card.onclick = () => viewJobDetail(jobId);
                     jobsList.appendChild(card);
                 });
             } else if (data.status === 404) {

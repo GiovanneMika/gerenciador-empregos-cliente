@@ -202,6 +202,7 @@
         <pre id="responseArea">Aguardando ação...</pre>
     </div>
 
+    <script src="../assets/js/protocol-validator.js"></script>
     <script src="../assets/js/jobs-api.js"></script>
     <script>
         const applicationsList = document.getElementById('applicationsList');
@@ -287,18 +288,18 @@
             card.innerHTML = `
                 <div class="job-header">
                     <div>
-                        <h3 class="job-title">${job.title} ${statusBadge}</h3>
+                        <h3 class="job-title">${job.title || 'Sem título'} ${statusBadge}</h3>
                     </div>
-                    <span class="job-area">${job.area}</span>
+                    <span class="job-area">${job.area || 'Não especificada'}</span>
                 </div>
-                <div class="job-company">🏢 ${job.company}</div>
-                <div class="job-location">📍 ${formatLocation(job.city, job.state)}</div>
+                <div class="job-company">🏢 ${job.company || 'Empresa não informada'}</div>
+                <div class="job-location">📍 ${formatLocation(job.city || '', job.state || '')}</div>
                 <div class="job-salary">💰 ${formatSalary(job.salary)}</div>
                 <div class="job-contact">📧 ${job.contact || 'Contato não informado'}</div>
                 <p class="job-description">${job.description ? job.description.substring(0, 200) + '...' : ''}</p>
                 ${feedbackHtml}
                 <div class="job-actions">
-                    <button class="btn-view" onclick="viewJobDetail(${job.job_id})">👁️ Ver Vaga Completa</button>
+                    <button class="btn-view" onclick="viewJobDetail(${job.job_id || job.id})">👁️ Ver Vaga Completa</button>
                 </div>
             `;
 

@@ -81,6 +81,21 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 }
 
 /**
+ * Busca dados de um usuário específico com validação de protocolo
+ * GET /users/{id}
+ */
+async function getUser(userId) {
+    const data = await apiCall(`/users/${userId}`, 'GET');
+    
+    // Validação via protocol-validator.js
+    if (data.status === 200 && window.ProtocolValidator) {
+        window.ProtocolValidator.validateUserResponse(data, `GET /users/${userId}`);
+    }
+    
+    return data;
+}
+
+/**
  * Função auxiliar para redirecionar após uma chamada à API
  * Aguarda tempo suficiente para a resposta aparecer no Network
  * @param {string} url - URL para redirecionar
